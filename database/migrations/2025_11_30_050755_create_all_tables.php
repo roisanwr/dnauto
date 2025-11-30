@@ -9,31 +9,30 @@ return new class extends Migration
     public function up(): void
     {
         // ==========================================
-        // BAGIAN 1: SISTEM LARAVEL (Pindahan dari file bawaan)
+        // BAGIAN 1: SISTEM LARAVEL (JANGAN DIUBAH)
         // ==========================================
         
-        // 1. Users (Login System)
+        // 1. Users (Tetap bahasa Inggris agar kompatibel dengan Auth Laravel)
+        // Di ERD: Entity 'User'
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name'); // Di ERD: nama
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-            // Custom Columns DN Auto
+            // Custom Columns
             $table->enum('role', ['customer', 'admin'])->default('customer');
             $table->string('no_hp')->nullable();
             $table->timestamps();
         });
 
-        // 2. Password Reset Tokens
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        // 3. Sessions (Wajib ada biar bisa Login di Web/PWA)
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -44,21 +43,21 @@ return new class extends Migration
         });
 
         // ==========================================
-        // BAGIAN 2: APLIKASI DN AUTO (Bisnis Logic)
+        // BAGIAN 2: APLIKASI DN AUTO (SESUAI ERD)
         // ==========================================
 
-        // 4. Employees (Teknisi)
-        Schema::create('employees', function (Blueprint $table) {
+        // 4. Tabel Pegawai (Employees -> Pegawai)
+        Schema::create('pegawai', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_pegawai');
+            $table->string('nama_pegawai'); // Di ERD: nama
             $table->string('jabatan')->default('Teknisi'); 
             $table->string('kontak'); 
             $table->enum('status_ketersediaan', ['available', 'busy', 'cuti'])->default('available');
             $table->timestamps();
         });
 
-        // 5. Addresses (Buku Alamat)
-        Schema::create('addresses', function (Blueprint $table) {
+        // 5. Tabel Alamat (Addresses -> Alamat)
+        Schema::create('alamat', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('label_alamat'); 
@@ -70,10 +69,10 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 6. Products
-        Schema::create('products', function (Blueprint $table) {
+        // 6. Tabel Produk (Products -> Produk)
+        Schema::create('produk', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_produk');
+            $table->string('nama_produk'); // Di ERD: nama
             $table->text('deskripsi')->nullable();
             $table->decimal('harga', 12, 2);
             $table->string('kategori');
@@ -82,8 +81,8 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 7. Orders
-        Schema::create('orders', function (Blueprint $table) {
+        // 7. Tabel Pesanan (Orders -> Pesanan)
+        Schema::create('pesanan', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_order')->unique();
             $table->foreignId('user_id')->constrained('users');
@@ -93,7 +92,7 @@ return new class extends Migration
             $table->string('snap_no_hp');
             $table->text('snap_alamat_lengkap');
             
-            // Status
+            // Status (Bahasa Indonesia sesuai BPMN)
             $table->enum('status', [
                 'menunggu_dp', 'verifikasi_dp', 'diproses', 
                 'siap_dikirim', 'menunggu_pelunasan', 'verifikasi_pelunasan', 
@@ -110,11 +109,12 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 8. Order Items
-        Schema::create('order_items', function (Blueprint $table) {
+        // 8. Tabel Detail Pesanan (Order Items -> Detail_Pesanan)
+        Schema::create('detail_pesanan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products');
+            // Perhatikan: constrained('pesanan') merujuk ke nama tabel baru
+            $table->foreignId('pesanan_id')->constrained('pesanan')->onDelete('cascade');
+            $table->foreignId('produk_id')->constrained('produk');
             $table->integer('jumlah');
             $table->decimal('harga_saat_beli', 12, 2);
             $table->decimal('subtotal', 12, 2);
@@ -122,10 +122,10 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 9. Payments
-        Schema::create('payments', function (Blueprint $table) {
+        // 9. Tabel Pembayaran (Payments -> Pembayaran)
+        Schema::create('pembayaran', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->foreignId('pesanan_id')->constrained('pesanan')->onDelete('cascade');
             $table->enum('tipe', ['dp', 'pelunasan']);
             $table->string('metode_pembayaran');
             $table->decimal('jumlah_bayar', 12, 2);
@@ -134,11 +134,13 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 10. Schedules
-        Schema::create('schedules', function (Blueprint $table) {
+        // 10. Tabel Schedule (Schedules -> Schedule)
+        // Saya pakai 'schedule' (singular) agar persis tulisan di kotak ERD kamu
+        Schema::create('schedule', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade')->unique(); 
-            $table->foreignId('employee_id')->nullable()->constrained('employees'); 
+            $table->foreignId('pesanan_id')->constrained('pesanan')->onDelete('cascade')->unique(); 
+            // Relasi ke tabel pegawai
+            $table->foreignId('pegawai_id')->nullable()->constrained('pegawai'); 
             $table->date('tgl_pengerjaan');
             $table->time('jam_mulai')->nullable();
             $table->enum('status', ['terjadwal', 'selesai', 'reschedule'])->default('terjadwal');
@@ -148,14 +150,14 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Hapus tabel urutan terbalik
-        Schema::dropIfExists('schedules');
-        Schema::dropIfExists('payments');
-        Schema::dropIfExists('order_items');
-        Schema::dropIfExists('orders');
-        Schema::dropIfExists('products');
-        Schema::dropIfExists('addresses');
-        Schema::dropIfExists('employees');
+        // Urutan drop dibalik
+        Schema::dropIfExists('schedule');
+        Schema::dropIfExists('pembayaran');
+        Schema::dropIfExists('detail_pesanan');
+        Schema::dropIfExists('pesanan');
+        Schema::dropIfExists('produk');
+        Schema::dropIfExists('alamat');
+        Schema::dropIfExists('pegawai');
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('users');
