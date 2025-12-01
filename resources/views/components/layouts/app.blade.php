@@ -21,37 +21,54 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     <span class="font-medium">Beranda</span>
                 </a>
-                <a href="/pesanan" wire:navigate class="flex items-center gap-3 px-4 py-3 rounded-xl transition {{ request()->is('pesanan*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    <span class="font-medium">Pesanan Saya</span>
-                </a>
-                <a href="/akun" wire:navigate class="flex items-center gap-3 px-4 py-3 rounded-xl transition {{ request()->is('akun*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <span class="font-medium">Akun Pengguna</span>
-                </a>
+
+                @auth
+                    <a href="/pesanan" wire:navigate class="flex items-center gap-3 px-4 py-3 rounded-xl transition {{ request()->is('pesanan*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <span class="font-medium">Pesanan Saya</span>
+                    </a>
+                    <a href="/akun" wire:navigate class="flex items-center gap-3 px-4 py-3 rounded-xl transition {{ request()->is('akun*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span class="font-medium">Akun Pengguna</span>
+                    </a>
+                @endauth
             </nav>
 
             <div class="p-4 border-t border-slate-800">
-                <div class="bg-slate-800 p-3 rounded-lg flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-slate-700"></div>
-                    <div>
-                        <p class="text-xs text-slate-400">Login sebagai</p>
-                        <p class="text-sm font-bold text-white">Sultan</p>
+                @auth
+                    <div class="bg-slate-800 p-3 rounded-lg flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs">
+                            {{ substr(auth()->user()->name, 0, 2) }}
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-xs text-slate-400">Login sebagai</p>
+                            <p class="text-sm font-bold text-white truncate">{{ auth()->user()->name }}</p>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <a href="/login" class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                        Masuk / Daftar
+                    </a>
+                @endauth
             </div>
         </aside>
-
 
         <header class="md:hidden sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-5 py-4 flex justify-between items-center h-16">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/30">DN</div>
                 <span class="font-bold text-lg tracking-wide text-white">AUTO</span>
             </div>
-            <button class="relative p-2 text-slate-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.403 4.207A2 2 0 0116.608 22H7.392a2 2 0 01-1.597-1.793L4 17h5m6-4V7a6 6 0 10-12 0v6a4 4 0 00-4 4v1h16v-1a4 4 0 00-4-4z" /></svg>
-                <span class="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
-            </button>
+            
+            @auth
+                <a href="/akun" class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs ring-2 ring-slate-800">
+                    {{ substr(auth()->user()->name, 0, 2) }}
+                </a>
+            @else
+                <a href="/login" class="text-xs font-bold text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-full hover:bg-blue-500/10">
+                    Masuk
+                </a>
+            @endauth
         </header>
 
 
@@ -68,14 +85,26 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     <span class="text-[10px] font-medium">Beranda</span>
                 </a>
-                <a href="/pesanan" wire:navigate class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-500 {{ request()->is('pesanan*') ? 'text-blue-500' : '' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    <span class="text-[10px] font-medium">Pesanan</span>
-                </a>
-                <a href="/akun" wire:navigate class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-500 {{ request()->is('akun*') ? 'text-blue-500' : '' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <span class="text-[10px] font-medium">Akun</span>
-                </a>
+
+                @auth
+                    <a href="/pesanan" wire:navigate class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-500 {{ request()->is('pesanan*') ? 'text-blue-500' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <span class="text-[10px] font-medium">Pesanan</span>
+                    </a>
+                    <a href="/akun" wire:navigate class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-500 {{ request()->is('akun*') ? 'text-blue-500' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span class="text-[10px] font-medium">Akun</span>
+                    </a>
+                @else
+                    <a href="#katalog" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                        <span class="text-[10px] font-medium">Katalog</span>
+                    </a>
+                    <a href="/login" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                        <span class="text-[10px] font-medium">Masuk</span>
+                    </a>
+                @endauth
             </nav>
         </footer>
 
