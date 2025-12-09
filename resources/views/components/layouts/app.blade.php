@@ -19,7 +19,7 @@
     </style>
 </head>
 <body class="font-sans antialiased bg-[#FFF8F0] text-stone-600 selection:bg-orange-100 selection:text-orange-600"
-      x-data="{ sidebarOpen: true }">
+      x-data="{ sidebarOpen: false }">
 
     <div class="min-h-screen flex flex-col md:flex-row">
 
