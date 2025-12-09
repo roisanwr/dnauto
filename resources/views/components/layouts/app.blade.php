@@ -97,7 +97,7 @@
                     <a href="#" class="text-sm font-bold text-stone-600 hover:text-orange-600 px-3 py-2 rounded-xl hover:bg-orange-50 transition-colors">
                         Daftar
                     </a>
-                    <a href="#" class="text-sm font-bold text-white bg-stone-800 px-5 py-2.5 rounded-xl hover:bg-stone-900 transition-colors shadow-lg shadow-stone-200">
+                    <a href="/login" class="text-sm font-bold text-white bg-stone-800 px-5 py-2.5 rounded-xl hover:bg-stone-900 transition-colors shadow-lg shadow-stone-200">
                         Masuk
                     </a>
                 </div>
