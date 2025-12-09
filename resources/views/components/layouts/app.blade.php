@@ -1,164 +1,139 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ $title ?? 'DN Auto' }}</title>
+
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
+    @livewireStyles
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Soft Shadow Custom */
+        .shadow-pastel { box-shadow: 0 4px 20px -2px rgba(226, 232, 240, 0.8); }
+    </style>
 </head>
-<body class="bg-blue-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 antialiased font-sans transition-colors duration-300"
-      x-data="{ 
-          sidebarOpen: false, 
-          darkMode: localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
-          toggleTheme() {
-              this.darkMode = !this.darkMode;
-              if (this.darkMode) {
-                  document.documentElement.classList.add('dark');
-                  localStorage.setItem('theme', 'dark');
-              } else {
-                  document.documentElement.classList.remove('dark');
-                  localStorage.setItem('theme', 'light');
-              }
-          }
-      }"
-      x-init="$watch('darkMode', val => val ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark'))">
+<body class="font-sans antialiased bg-[#F8FAFC] text-slate-600 selection:bg-indigo-100 selection:text-indigo-600"
+      x-data="{ sidebarOpen: true }">
 
     <div class="min-h-screen flex flex-col md:flex-row">
-        
-        <div x-show="sidebarOpen" 
-             @click="sidebarOpen = false"
-             x-transition:enter="transition-opacity ease-linear duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity ease-linear duration-300"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-black/50 z-40 lg:hidden">
-        </div>
 
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed top-0 left-0 z-50 w-64 h-screen bg-white dark:bg-slate-900 border-r border-blue-100 dark:border-slate-800 transition-transform duration-300 ease-in-out shadow-2xl flex flex-col">
+        <aside class="hidden md:flex flex-col border-r border-slate-100 bg-white transition-all duration-300 fixed inset-y-0 z-40 shadow-sm"
+               :class="sidebarOpen ? 'w-64' : 'w-20'">
             
-            <div class="p-6 flex items-center justify-between border-b border-blue-100 dark:border-slate-800 h-16 shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">DN</div>
-                    <span class="font-bold text-xl tracking-wide text-slate-800 dark:text-white">AUTO</span>
+            <div @click="sidebarOpen = !sidebarOpen" 
+                 class="h-20 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors group border-b border-slate-50">
+                <div x-show="sidebarOpen" class="flex items-center space-x-2">
+                     <div class="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                     </div>
+                     <span class="text-xl font-bold text-slate-800 tracking-tight">DN Auto</span>
                 </div>
-                <button @click="sidebarOpen = false" class="text-slate-500 hover:text-red-500 dark:text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                </button>
+                <div x-show="!sidebarOpen">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                </div>
             </div>
+            
+            <nav class="flex-1 p-4 space-y-2 mt-2 no-scrollbar" :class="sidebarOpen ? 'overflow-y-auto' : 'overflow-hidden'">
+                @php
+                    $menuClass = "flex items-center px-3 py-3 text-sm font-medium rounded-2xl transition-all duration-200 group relative";
+                    $activeClass = "bg-indigo-50 text-indigo-600"; 
+                    $inactiveClass = "text-slate-500 hover:bg-slate-50 hover:text-slate-700";
+                @endphp
 
-            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <a href="/" wire:navigate class="flex items-center gap-3 px-4 py-3 rounded-xl transition {{ request()->is('/') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                    <span class="font-medium">Beranda</span>
+                <a href="/" wire:navigate class="{{ $menuClass }} {{ request()->is('/') ? $activeClass : $inactiveClass }}">
+                    <svg class="w-6 h-6 shrink-0 {{ request()->is('/') ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span class="ml-3 whitespace-nowrap font-semibold" x-show="sidebarOpen">Beranda</span>
+                </a>
+                
+                <a href="#" class="{{ $menuClass }} {{ $inactiveClass }}">
+                    <svg class="w-6 h-6 shrink-0 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <span class="ml-3 whitespace-nowrap" x-show="sidebarOpen">Produk</span>
                 </a>
 
-                @auth
-                    <a href="/pesanan" wire:navigate class="flex items-center gap-3 px-4 py-3 rounded-xl transition {{ request()->is('pesanan*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        <span class="font-medium">Pesanan Saya</span>
-                    </a>
-                    <a href="/akun" wire:navigate class="flex items-center gap-3 px-4 py-3 rounded-xl transition {{ request()->is('akun*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <span class="font-medium">Akun Pengguna</span>
-                    </a>
-                @endauth
+                <a href="#" class="{{ $menuClass }} {{ $inactiveClass }}">
+                    <svg class="w-6 h-6 shrink-0 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    <span class="ml-3 whitespace-nowrap" x-show="sidebarOpen">Pesanan</span>
+                </a>
             </nav>
 
-            <div class="p-4 border-t border-blue-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
-                @auth
-                    <div class="bg-blue-50 dark:bg-slate-800 p-3 rounded-lg flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs">
-                            {{ substr(auth()->user()->name, 0, 2) }}
-                        </div>
-                        <div class="overflow-hidden">
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Login sebagai</p>
-                            <p class="text-sm font-bold text-slate-800 dark:text-white truncate">{{ auth()->user()->name }}</p>
-                        </div>
-                    </div>
-                @else
-                    <a href="/login" class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/20">
-                        Masuk / Daftar
-                    </a>
-                @endauth
+            <div class="p-4 border-t border-slate-50">
+                 <button class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-rose-500 bg-rose-50 rounded-2xl hover:bg-rose-100 transition-colors">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <span class="ml-2 whitespace-nowrap" x-show="sidebarOpen">Keluar</span>
+                </button>
             </div>
         </aside>
 
-        <header class="fixed top-0 right-0 z-40 bg-white/80 dark:bg-slate-900/90 backdrop-blur-md border-b border-blue-100 dark:border-slate-800 px-5 py-4 flex justify-between items-center h-16 transition-all duration-300"
-                :class="sidebarOpen ? 'md:left-64' : 'left-0'">
+        <main class="flex-1 min-h-screen relative flex flex-col transition-all duration-300"
+              :class="sidebarOpen ? 'md:ml-64' : 'md:ml-20'">
             
-            <div class="flex items-center gap-4">
-                <button @click="sidebarOpen = !sidebarOpen" class="p-2 -ml-2 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-white transition rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-                </button>
-
-                <div class="flex items-center gap-2" x-show="!sidebarOpen" x-transition>
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shadow-md">DN</div>
-                    <span class="font-bold text-lg tracking-wide text-slate-800 dark:text-white hidden sm:block">AUTO</span>
+            <header class="bg-white/80 backdrop-blur-md h-20 flex items-center justify-between px-6 sticky top-0 z-30 border-b border-slate-100/50">
+                <div class="md:hidden flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="font-bold text-lg text-slate-800">DN Auto</span>
                 </div>
-            </div>
 
-            <div class="flex items-center gap-3">
-                <button @click="toggleTheme()" class="p-2 text-slate-500 hover:text-orange-500 dark:text-slate-400 dark:hover:text-yellow-400 transition rounded-full hover:bg-orange-50 dark:hover:bg-slate-800">
-                    <svg x-show="darkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41-1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-                    <svg x-show="!darkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                </button>
-                <button class="relative p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition rounded-full hover:bg-blue-50 dark:hover:bg-slate-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                    <span class="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
-                </button>
-                @auth
-                    <a href="/akun" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white text-xs ring-2 ring-blue-100 dark:ring-slate-800">
-                        {{ substr(auth()->user()->name, 0, 2) }}
-                    </a>
-                @endauth
-            </div>
-        </header>
+                <div class="hidden md:block"></div>
 
-        <main class="flex-1 w-full pt-20 pb-24 md:pb-8 px-5 md:px-8 transition-all duration-300"
-              :class="sidebarOpen ? 'md:ml-64' : ''">
-            <div class="max-w-5xl mx-auto">
+                <div class="flex items-center space-x-4">
+                    <button class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:border-indigo-100 transition-all shadow-sm relative">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="absolute top-2 right-2.5 w-2 h-2 bg-rose-400 rounded-full border border-white"></span>
+                    </button>
+                    
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm shadow-sm border border-indigo-200">
+                        RO
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-4 pb-28 md:p-8">
                 {{ $slot }}
             </div>
         </main>
 
-        <footer class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/95 backdrop-blur-md border-t border-blue-100 dark:border-slate-800 pb-safe transition-colors duration-300">
-            <nav class="grid grid-cols-3 h-16 items-center">
-                <a href="/" wire:navigate class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-500 {{ request()->is('/') ? 'text-blue-600 dark:text-blue-500' : '' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                    <span class="text-[10px] font-medium">Beranda</span>
+        <nav class="md:hidden fixed bottom-6 inset-x-4 h-16 bg-white/90 backdrop-blur-md rounded-2xl shadow-pastel z-50 border border-white/20">
+            <div class="grid grid-cols-4 h-full items-center justify-items-center px-2">
+                
+                <a href="/" wire:navigate class="flex flex-col items-center justify-center w-full h-full space-y-1">
+                    <div class="{{ request()->is('/') ? 'text-indigo-500 bg-indigo-50' : 'text-slate-300' }} p-2 rounded-xl transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    </div>
                 </a>
-                @auth
-                    <a href="/pesanan" wire:navigate class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-500 {{ request()->is('pesanan*') ? 'text-blue-600 dark:text-blue-500' : '' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        <span class="text-[10px] font-medium">Pesanan</span>
-                    </a>
-                    <a href="/akun" wire:navigate class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-500 {{ request()->is('akun*') ? 'text-blue-600 dark:text-blue-500' : '' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <span class="text-[10px] font-medium">Akun</span>
-                    </a>
-                @else
-                    <a href="#katalog" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-                        <span class="text-[10px] font-medium">Katalog</span>
-                    </a>
-                    <a href="/login" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-                        <span class="text-[10px] font-medium">Masuk</span>
-                    </a>
-                @endauth
-            </nav>
-        </footer>
+
+                <a href="#" class="flex flex-col items-center justify-center w-full h-full space-y-1">
+                     <div class="text-slate-300 p-2 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    </div>
+                </a>
+
+                <a href="#" class="flex flex-col items-center justify-center w-full h-full space-y-1">
+                     <div class="text-slate-300 p-2 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    </div>
+                </a>
+
+                <a href="#" class="flex flex-col items-center justify-center w-full h-full space-y-1">
+                     <div class="text-slate-300 p-2 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                </a>
+
+            </div>
+        </nav>
 
     </div>
+    @livewireScripts
 </body>
 </html>
