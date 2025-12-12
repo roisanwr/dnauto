@@ -6,6 +6,7 @@ use App\Livewire\Home;  // Pastikan ini di-import
 use App\Livewire\Login; // Pastikan ini di-import (PENTING)
 use App\Livewire\Register; // Pastikan ini di-import (PENTING)
 use App\Livewire\Profile;
+use App\Livewire\Admin\Dashboard as AdminDashboard;
 
 // 1. Halaman Utama (Home)
 Route::get('/', Home::class)->name('home');
@@ -26,3 +27,14 @@ Route::get('/profile', Profile::class)->name('profile')->middleware('auth');
 // 4. Logout
 // Route Logout yang baru (hanya untuk user yang sudah terautentikasi)
 Route::post('/logout', [GoogleAuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+
+
+// WILAYAH KEKUASAAN ADMIN (Dipagari Middleware is_admin)
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
+    
+    // Semua route di sini otomatis ada awalan /admin
+    Route::get('/dashboard', AdminDashboard::class)->name('admin.dashboard');
+    
+    // Nanti tambah route kelola barang, pesanan, dll disini...
+});

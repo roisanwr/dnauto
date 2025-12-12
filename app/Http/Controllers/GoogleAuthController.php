@@ -59,6 +59,13 @@ class GoogleAuthController extends Controller
             }
 
             Auth::login($user);
+
+            // LOGIKA BARU: Cek Role
+            if ($user->role === 'admin') {
+                return redirect('/admin/dashboard');
+            }
+
+            // Kalau customer, ke Home
             return redirect('/');
         
         } catch (\Exception $e) {

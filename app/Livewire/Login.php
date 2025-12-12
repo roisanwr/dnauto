@@ -10,18 +10,21 @@ class Login extends Component
     public $email;
     public $password;
 
-    public function login()
+public function login()
     {
-        $this->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
+        // ... validasi ...
+        
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
+            
+            // CEK ROLE DISINI
+            if (Auth::user()->role === 'admin') {
+                return redirect()->intended('/admin/dashboard');
+            }
+
             return redirect()->intended('/');
         }
 
-        $this->addError('email', 'Email atau password salah.');
+        // ... error handling ...
     }
 
     public function render()
