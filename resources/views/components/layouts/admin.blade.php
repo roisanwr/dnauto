@@ -60,7 +60,7 @@
                 Master Data
             </div>
 
-            <div x-data="{ open: false }">
+            <div x-data="{ open: {{ request()->routeIs('admin.produk*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="package" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
@@ -69,8 +69,9 @@
                     <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="open" class="pl-10 space-y-1 mt-1" x-collapse>
-                    <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Stok Sparepart</a>
-                    <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Daftar Layanan</a>
+                    <a href="{{ route('admin.produk') }}" wire:navigate class="block py-2 text-sm {{ request()->routeIs('admin.produk') ? 'text-orange-600 font-bold' : 'text-gray-500 hover:text-orange-600' }}">
+                        Daftar Produk
+                    </a>
                     <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Kategori</a>
                 </div>
             </div>
@@ -86,7 +87,6 @@
                 <div x-show="open" class="pl-10 space-y-1 mt-1" x-collapse>
                     <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Data Pelanggan</a>
                     <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Data Mekanik</a>
-                    <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Data Admin</a>
                 </div>
             </div>
 
@@ -105,10 +105,8 @@
                  x-transition:enter="transition ease-out duration-100"
                  x-transition:enter-start="transform opacity-0 scale-95 translate-y-2"
                  x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
-                 x-transition:leave-end="transform opacity-0 scale-95 translate-y-2"
-                 class="absolute bottom-full left-0 w-full mb-2 px-4 z-50">
+                 class="absolute bottom-full left-0 w-full mb-2 px-4 z-50"
+                 style="display: none;">
                 
                 <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden ring-1 ring-black ring-opacity-5">
                     <a href="{{ route('profile') }}" wire:navigate class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors border-b border-gray-50">
