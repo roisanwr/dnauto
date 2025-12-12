@@ -87,12 +87,22 @@
                             {{-- Tombol Aksi --}}
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button class="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded">
+                                    
+                                    {{-- TOMBOL EDIT --}}
+                                    <a href="{{ route('admin.produk.edit', $produk->id) }}" wire:navigate 
+                                    class="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
+                                    title="Edit Produk">
                                         <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded">
+                                    </a>
+
+                                    {{-- TOMBOL HAPUS (Dengan Konfirmasi) --}}
+                                    <button wire:click="delete({{ $produk->id }})"
+                                            wire:confirm="Yakin ingin menghapus produk '{{ $produk->nama_produk }}'?"
+                                            class="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                            title="Hapus Produk">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
+
                                 </div>
                             </td>
                         </tr>

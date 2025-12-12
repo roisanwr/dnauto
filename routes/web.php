@@ -9,6 +9,7 @@ use App\Livewire\Profile;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Produk\Index;
 use App\Livewire\Admin\Produk\Create;
+use App\Livewire\Admin\Produk\Edit;
 
 // 1. Halaman Utama (Home)
 Route::get('/', Home::class)->name('home');
@@ -43,4 +44,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
 
     // Route untuk halaman tambah produk
     Route::get('/produk/create', Create::class)->name('admin.produk.create');
+
+    // Route untuk halaman edit produk
+    Route::get('/produk/{id}/edit', Edit::class)->name('admin.produk.edit');
 });
