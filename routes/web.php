@@ -8,6 +8,7 @@ use App\Livewire\Register; // Pastikan ini di-import (PENTING)
 use App\Livewire\Profile;
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Produk\Index;
+use App\Livewire\Admin\Produk\Create;
 
 // 1. Halaman Utama (Home)
 Route::get('/', Home::class)->name('home');
@@ -39,4 +40,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
     
     // Nanti tambah route kelola barang, pesanan, dll disini...
     Route::get('/produk', App\Livewire\Admin\Produk\Index::class)->name('admin.produk');
+
+    // Route untuk halaman tambah produk
+    Route::get('/produk/create', Create::class)->name('admin.produk.create');
 });
