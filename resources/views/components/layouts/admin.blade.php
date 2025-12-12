@@ -5,91 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - DN Auto</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
-    <style>[x-cloak] { display: none !important; }</style>
-</head>
-<body class="bg-gray-50 font-sans antialiased" x-data="{ sidebarOpen: true }">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    <div class="min-h-screen flex">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
         
-        {{-- SIDEBAR ADMIN --}}
-        <aside class="fixed inset-y-0 left-0 z-50 bg-stone-900 text-white transition-all duration-300 ease-in-out"
-               :class="sidebarOpen ? 'w-64' : 'w-20'">
-            
-            {{-- Logo Area --}}
-            <div class="h-16 flex items-center justify-center border-b border-stone-800">
-                <span class="font-bold text-xl tracking-wider" x-show="sidebarOpen">ADMIN PANEL</span>
-                <span class="font-bold text-xl" x-show="!sidebarOpen">DN</span>
-            </div>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 h-screen flex overflow-hidden" x-data="{ sidebarOpen: true }">
 
-            {{-- Menu Items --}}
-            <nav class="mt-5 px-3 space-y-2">
-                
-                {{-- Dashboard --}}
-                <a href="{{ route('admin.dashboard') }}" wire:navigate class="flex items-center px-4 py-3 bg-stone-800 rounded-xl text-white group transition-colors">
-                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="ml-3 font-medium" x-show="sidebarOpen">Dashboard</span>
-                </a>
-
-                {{-- Master Data (Contoh Menu Dropdown) --}}
-                <div x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-3 text-stone-400 hover:bg-stone-800 hover:text-white rounded-xl transition-colors">
-                        <div class="flex items-center">
-                            <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                            <span class="ml-3 font-medium" x-show="sidebarOpen">Master Data</span>
-                        </div>
-                        <svg class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : ''" x-show="sidebarOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div x-show="open && sidebarOpen" class="mt-2 pl-11 space-y-1">
-                        <a href="#" class="block px-4 py-2 text-sm text-stone-400 hover:text-white rounded-lg">Kategori</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-stone-400 hover:text-white rounded-lg">Produk & Jasa</a>
-                    </div>
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 z-20 transition-all duration-300 ease-in-out"
+           :class="sidebarOpen ? 'ml-0' : '-ml-64'">
+        
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white">
+                    <i data-lucide="wrench" class="w-4 h-4"></i>
                 </div>
+                <span class="text-lg font-bold tracking-tight text-gray-900">DN Auto</span>
+            </div>
+        </div>
 
-                {{-- Pesanan Masuk --}}
-                <a href="#" class="flex items-center px-4 py-3 text-stone-400 hover:bg-stone-800 hover:text-white rounded-xl transition-colors">
-                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                    <span class="ml-3 font-medium" x-show="sidebarOpen">Pesanan</span>
-                </a>
-
-            </nav>
+        <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             
-            {{-- Logout Admin --}}
-            <div class="absolute bottom-0 w-full p-4 border-t border-stone-800">
+            {{-- Menu Dashboard --}}
+            <a href="{{ route('admin.dashboard') }}" wire:navigate 
+               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md group {{ request()->routeIs('admin.dashboard') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 {{ request()->routeIs('admin.dashboard') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600' }}"></i>
+                Dashboard
+            </a>
+
+            {{-- Contoh Menu Lain (Statis Dulu) --}}
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
+                <i data-lucide="list-video" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
+                Service Queue
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
+                <i data-lucide="package" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
+                Spareparts
+            </a>
+
+            <div class="pt-4 mt-4 border-t border-gray-100">
+                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">System</p>
+                
+                {{-- Tombol Logout --}}
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="flex items-center w-full px-4 py-2 text-red-400 hover:bg-stone-800 hover:text-red-300 rounded-xl transition-colors">
-                        <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        <span class="ml-3 font-medium" x-show="sidebarOpen">Logout</span>
+                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors group">
+                        <i data-lucide="log-out" class="w-4 h-4 text-red-400 group-hover:text-red-600"></i>
+                        Logout
                     </button>
                 </form>
             </div>
-        </aside>
+        </nav>
 
-        {{-- MAIN CONTENT --}}
-        <main class="flex-1 transition-all duration-300 ease-in-out" 
-              :class="sidebarOpen ? 'ml-64' : 'ml-20'">
-            
-            {{-- Topbar --}}
-            <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 sticky top-0 z-40">
-                <button @click="sidebarOpen = !sidebarOpen" class="text-stone-500 hover:text-stone-800 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm font-semibold text-stone-700">Hi, Admin {{ Auth::user()->name }}</span>
-                    <img src="{{ Auth::user()->avatar }}" class="w-9 h-9 rounded-full object-cover border border-stone-200">
+        <div class="p-4 border-t border-gray-200">
+            <div class="flex items-center gap-3 w-full p-2 rounded-md">
+                <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.Auth::user()->name }}" alt="Admin" class="w-8 h-8 rounded-full border border-gray-200 object-cover">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ Auth::user()->name }}</p>
+                    <p class="text-xs text-gray-500 truncate">Administrator</p>
                 </div>
-            </header>
-
-            {{-- Content Slot --}}
-            <div class="p-8">
-                {{ $slot }}
             </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0 z-10">
+            <div class="flex items-center gap-4">
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+
+                <nav class="flex" aria-label="Breadcrumb">
+                    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+                        <li><span class="text-gray-900 font-medium">DN Auto Admin</span></li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button class="relative p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100">
+                    <span class="absolute top-2 right-2.5 block h-1.5 w-1.5 rounded-full ring-2 ring-white bg-orange-500"></span>
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-8">
+            {{ $slot }}
         </main>
     </div>
 
-    @livewireScripts
+    <script>
+        // Init icon saat halaman pertama kali load
+        lucide.createIcons();
+        
+        // Init icon saat Livewire berpindah halaman (PENTING!)
+        document.addEventListener('livewire:navigated', () => {
+            lucide.createIcons();
+        });
+    </script>
 </body>
 </html>
