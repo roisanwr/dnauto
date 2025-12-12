@@ -22,36 +22,47 @@ class GoogleAuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
 
-            // Cek apakah user dengan email ini sudah ada?
+            // KONDISI 1: User sedang login (Ingin menghubungkan akun)
+            if (Auth::check()) {
+                $currentUser = Auth::user();
+                
+                // Update data user saat ini dengan Google ID
+                $currentUser->update([
+                    'google_id' => $googleUser->getId(),
+                    // Update avatar hanya jika user belum punya avatar
+                    'avatar' => $currentUser->avatar ?? $googleUser->getAvatar(), 
+                ]);
+
+                return redirect('/profile')->with('message', 'Akun Google berhasil dihubungkan!');
+            }
+
+            // KONDISI 2: User belum login (Login/Register biasa)
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if (!$user) {
-                // Kalo belum ada, buat user baru
+                // Register User Baru
                 $user = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),
-                    'password' => null, // Tidak butuh password
-                    'role' => 'customer', // Default role
-                    'email_verified_at' => now(), // Anggap email Google sudah valid
+                    'password' => null,
+                    'role' => 'customer',
+                    'email_verified_at' => now(),
                 ]);
             } else {
-                // Kalo sudah ada, update google_id dan avatar jika belum ada
+                // User Lama Login (Update ID & Avatar jika kosong)
                 $user->update([
                     'google_id' => $googleUser->getId(),
-                    'avatar' => $googleUser->getAvatar(),
+                    'avatar' => $user->avatar ?? $googleUser->getAvatar(),
                 ]);
             }
 
-            // Login manual user tersebut
             Auth::login($user);
-
-            // Redirect ke Home
             return redirect('/');
         
         } catch (\Exception $e) {
-            return redirect('/login')->with('error', 'Gagal login dengan Google. Coba lagi.');
+            return redirect('/login')->with('error', 'Gagal login/link Google.');
         }
     }
     // 3. Fungsi Logout (Tambahan Baru)

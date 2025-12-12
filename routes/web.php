@@ -4,17 +4,24 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleAuthController;
 use App\Livewire\Home;  // Pastikan ini di-import
 use App\Livewire\Login; // Pastikan ini di-import (PENTING)
+use App\Livewire\Register; // Pastikan ini di-import (PENTING)
+use App\Livewire\Profile;
 
 // 1. Halaman Utama (Home)
 Route::get('/', Home::class)->name('home');
 
-// 2. Halaman Login (INI YANG TADI KURANG)
+// Route Register Baru
+Route::get('/register', Register::class)->name('register')->middleware('guest');
+
 // name('login') penting karena Laravel otomatis mencarinya jika user belum login
 Route::get('/login', Login::class)->name('login')->middleware('guest');
 
 // 3. Google Auth
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+
+// 5. Profile User
+Route::get('/profile', Profile::class)->name('profile')->middleware('auth');
 
 // 4. Logout
 // Route Logout yang baru (hanya untuk user yang sudah terautentikasi)

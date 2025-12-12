@@ -110,7 +110,7 @@
                         <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900">
                             Masuk
                         </a>
-                        <a href="#" class="px-4 py-2 text-sm font-medium text-white bg-stone-900 rounded-lg hover:bg-stone-800">
+                        <a href="{{ route('register') }}" class="px-4 py-2 text-sm font-medium text-white bg-stone-900 rounded-lg hover:bg-stone-800">
                             Daftar
                         </a>
                     @endguest
@@ -142,7 +142,7 @@
                                     Halo, {{ Auth::user()->name }}
                                 </div>
                                 
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <a href="{{ route('profile') }}" wire:navigate class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                     Profile Saya
                                 </a>
                                 
