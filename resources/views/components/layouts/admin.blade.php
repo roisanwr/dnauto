@@ -81,7 +81,7 @@
                 </div>
             </div> -->
 
-            <div x-data="{ open: false }">
+            <div x-data="{ open: {{ request()->routeIs('admin.pegawai*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="users" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
@@ -91,7 +91,10 @@
                 </button>
                 <div x-show="open" class="pl-10 space-y-1 mt-1" x-collapse>
                     <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Data Pelanggan</a>
-                    <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Data Mekanik</a>
+                    
+                    <a href="{{ route('admin.pegawai') }}" wire:navigate class="block py-2 text-sm {{ request()->routeIs('admin.pegawai*') ? 'text-orange-600 font-bold' : 'text-gray-500 hover:text-orange-600' }}">
+                        Data Pegawai
+                    </a>
                 </div>
             </div>
 

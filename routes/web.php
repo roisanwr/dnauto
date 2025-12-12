@@ -10,6 +10,10 @@ use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\Produk\Index;
 use App\Livewire\Admin\Produk\Create;
 use App\Livewire\Admin\Produk\Edit;
+use App\Livewire\Admin\Pegawai\Index as PegawaiIndex;
+use App\Livewire\Admin\Pegawai\Create as PegawaiCreate;
+use App\Livewire\Admin\Pegawai\Edit as PegawaiEdit;
+
 
 // 1. Halaman Utama (Home)
 Route::get('/', Home::class)->name('home');
@@ -47,4 +51,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
 
     // Route untuk halaman edit produk
     Route::get('/produk/{id}/edit', Edit::class)->name('admin.produk.edit');
+
+    // Route Pegawai
+    Route::get('/pegawai', PegawaiIndex::class)->name('admin.pegawai');
+    Route::get('/pegawai/create', PegawaiCreate::class)->name('admin.pegawai.create');
+    Route::get('/pegawai/{id}/edit', PegawaiEdit::class)->name('admin.pegawai.edit');
 });
