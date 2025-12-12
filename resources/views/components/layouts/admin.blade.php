@@ -59,8 +59,13 @@
             <div class="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Master Data
             </div>
+            
 
-            <div x-data="{ open: {{ request()->routeIs('admin.produk*') ? 'true' : 'false' }} }">
+            <a href="{{ route('admin.produk') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
+                <i data-lucide="package" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
+                Produk & Jasa
+            </a>
+            <!-- <div x-data="{ open: {{ request()->routeIs('admin.produk*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="package" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
@@ -74,7 +79,7 @@
                     </a>
                     <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Kategori</a>
                 </div>
-            </div>
+            </div> -->
 
             <div x-data="{ open: false }">
                 <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
@@ -146,7 +151,7 @@
                 <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
-                <h1 class="text-lg font-semibold text-gray-800">Administrator Area</h1>
+                
             </div>
 
             <div class="flex items-center gap-4">
