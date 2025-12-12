@@ -66,10 +66,27 @@
             </nav>
 
             <div class="p-4 border-t border-orange-50">
-                 <a href="/login" wire:navigate class="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white bg-orange-400 rounded-2xl hover:bg-orange-500 transition-colors shadow-sm shadow-orange-200">
-                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                    <span class="ml-2 whitespace-nowrap" x-show="sidebarOpen">Masuk Akun</span>
-                </a>
+                @guest
+                    <a href="{{ route('login') }}" wire:navigate class="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white bg-orange-400 rounded-2xl hover:bg-orange-500 transition-colors shadow-sm shadow-orange-200">
+                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        <span class="ml-2 whitespace-nowrap" x-show="sidebarOpen">Masuk Akun</span>
+                    </a>
+                @endguest
+
+                @auth
+                <form action="{{ route('logout') }}" method="POST" class="w-full">
+                    @csrf
+                    <button type="submit" 
+                            class="flex items-center justify-center w-full px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors group">
+                        
+                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        
+                        <span class="ml-2 whitespace-nowrap" x-show="sidebarOpen">Keluar</span>
+                    </button>
+                </form>
+                @endauth
             </div>
         </aside>
 
@@ -87,19 +104,58 @@
 
                 <div class="hidden md:block"></div>
 
-                <div class="flex items-center space-x-3">
-                    <a href="#" class="hidden md:block text-sm font-medium text-stone-500 hover:text-orange-500 transition-colors">
-                        Bantuan
-                    </a>
-                    
-                    <div class="h-6 w-px bg-stone-200 hidden md:block"></div>
-                    
-                    <a href="#" class="text-sm font-bold text-stone-600 hover:text-orange-600 px-3 py-2 rounded-xl hover:bg-orange-50 transition-colors">
-                        Daftar
-                    </a>
-                    <a href="/login" class="text-sm font-bold text-white bg-stone-800 px-5 py-2.5 rounded-xl hover:bg-stone-900 transition-colors shadow-lg shadow-stone-200">
-                        Masuk
-                    </a>
+                <div class="flex items-center space-x-4">
+                    @guest
+                        {{-- TAMPILAN UNTUK TAMU (BELUM LOGIN) --}}
+                        <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                            Masuk
+                        </a>
+                        <a href="#" class="px-4 py-2 text-sm font-medium text-white bg-stone-900 rounded-lg hover:bg-stone-800">
+                            Daftar
+                        </a>
+                    @endguest
+
+                    @auth
+                        {{-- TAMPILAN UNTUK USER (SUDAH LOGIN) --}}
+                        <div class="relative group" x-data="{ open: false }">
+                            {{-- Foto Profil & Nama (Bisa Diklik) --}}
+                            <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
+                                <img src="{{ Auth::user()->avatar }}" 
+                                    alt="{{ Auth::user()->name }}" 
+                                    class="w-8 h-8 rounded-full border border-gray-200 object-cover">
+                                <span class="text-sm font-medium text-gray-700 hidden md:block">
+                                    {{ Auth::user()->name }}
+                                </span>
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+
+                            {{-- Dropdown Menu (Muncul saat diklik) --}}
+                            <div x-show="open" 
+                                @click.away="open = false"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-50"
+                                style="display: none;">
+                                
+                                {{-- Menu Item --}}
+                                <div class="px-4 py-2 text-xs text-gray-500 border-b">
+                                    Halo, {{ Auth::user()->name }}
+                                </div>
+                                
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                    Profile Saya
+                                </a>
+                                
+                                {{-- Tombol Logout --}}
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                        Keluar / Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endauth
                 </div>
             </header>
 

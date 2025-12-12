@@ -17,7 +17,5 @@ Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('goo
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 // 4. Logout
-Route::get('/logout', function () {
-    \Illuminate\Support\Facades\Auth::logout();
-    return redirect('/');
-})->name('logout');
+// Route Logout yang baru (hanya untuk user yang sudah terautentikasi)
+Route::post('/logout', [GoogleAuthController::class, 'logout'])->name('logout')->middleware('auth');

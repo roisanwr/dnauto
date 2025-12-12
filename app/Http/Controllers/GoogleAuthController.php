@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class GoogleAuthController extends Controller
@@ -52,5 +53,22 @@ class GoogleAuthController extends Controller
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Gagal login dengan Google. Coba lagi.');
         }
+    }
+    // 3. Fungsi Logout (Tambahan Baru)
+    public function logout(Request $request)
+    {
+        // 1. Logout user dari auth
+        Auth::logout();
+ 
+        // 2. Invalidate session (Security Best Practice)
+        // Ini penting biar sesi lama user benar-benar hangus
+        $request->session()->invalidate();
+ 
+        // 3. Regenerate CSRF Token
+        // Mencegah serangan CSRF pada sesi berikutnya
+        $request->session()->regenerateToken();
+ 
+        // 4. Balikin ke halaman utama
+        return redirect('/');
     }
 }
