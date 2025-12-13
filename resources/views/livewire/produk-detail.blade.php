@@ -53,10 +53,11 @@
 
                 {{-- Tombol Aksi --}}
                 <div class="mt-8 pt-6 border-t border-stone-100">
-                    <button class="w-full bg-stone-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200/50 hover:bg-stone-800 transition-all active:scale-95 flex items-center justify-center">
+                    {{-- Ubah tombol <button> menjadi <a> --}}
+                    <a href="{{ route('checkout', $produk->id) }}" wire:navigate class="w-full bg-stone-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-200/50 hover:bg-stone-800 transition-all active:scale-95 flex items-center justify-center">
                         <span>Lanjut Pemesanan</span>
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </button>
+                    </a>
                     <p class="text-center text-xs text-stone-400 mt-3">
                         *Anda bisa memilih opsi jasa pasang di halaman selanjutnya.
                     </p>

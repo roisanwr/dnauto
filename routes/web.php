@@ -15,6 +15,8 @@ use App\Livewire\Admin\Pegawai\Create as PegawaiCreate;
 use App\Livewire\Admin\Pegawai\Edit as PegawaiEdit;
 use App\Livewire\Admin\Pelanggan\Index as PelangganIndex;
 use App\Livewire\ProdukDetail;
+use App\Livewire\Checkout;
+use App\Livewire\Payment;
 
 
 
@@ -41,6 +43,11 @@ Route::post('/logout', [GoogleAuthController::class, 'logout'])->name('logout')-
 // 6. Detail Produk
 Route::get('/produk/{id}', ProdukDetail::class)->name('produk.detail');
 
+// 7. Checkout
+Route::get('/checkout/{produkId}', Checkout::class)->name('checkout');
+
+// 8. Payment
+Route::get('/payment/{id}', App\Livewire\Payment::class)->name('payment');
 
 // WILAYAH KEKUASAAN ADMIN (Dipagari Middleware is_admin)
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {

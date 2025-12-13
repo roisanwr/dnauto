@@ -93,11 +93,7 @@ return new class extends Migration
             $table->text('snap_alamat_lengkap');
             
             // Status (Bahasa Indonesia sesuai BPMN)
-            $table->enum('status', [
-                'menunggu_dp', 'verifikasi_dp', 'diproses', 
-                'siap_dikirim', 'menunggu_pelunasan', 'verifikasi_pelunasan', 
-                'dijadwalkan', 'selesai', 'batal'
-            ])->default('menunggu_dp');
+            $table->string('status'); // Tipe STRING (Fleksibel, bisa isi apa aja)
 
             // Keuangan
             $table->decimal('total_belanja', 12, 2);
