@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+	/* Slightly darker background for editable inputs to distinguish them from plain white */
+	input:not([disabled]):not([type="hidden"]),
+	textarea:not([disabled]),
+	select:not([disabled]) {
+		@apply bg-gray-50 border border-gray-300 rounded-md;
+	}
+
+	/* Keep a clear focus state */
+	input:focus:not([type="hidden"]),
+	textarea:focus,
+	select:focus {
+		@apply bg-white ring-2 ring-indigo-300 outline-none;
+	}
+}

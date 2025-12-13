@@ -90,7 +90,9 @@
                     <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 <div x-show="open" class="pl-10 space-y-1 mt-1" x-collapse>
-                    <a href="#" class="block py-2 text-sm text-gray-500 hover:text-orange-600">Data Pelanggan</a>
+                    <a href="{{ route('admin.pelanggan') }}" wire:navigate class="block py-2 text-sm {{ request()->routeIs('admin.pelanggan') ? 'text-orange-600 font-bold' : 'text-gray-500 hover:text-orange-600' }}">
+                        Data Pelanggan
+                    </a>
                     
                     <a href="{{ route('admin.pegawai') }}" wire:navigate class="block py-2 text-sm {{ request()->routeIs('admin.pegawai*') ? 'text-orange-600 font-bold' : 'text-gray-500 hover:text-orange-600' }}">
                         Data Pegawai

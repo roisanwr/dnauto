@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailPesanan extends Model
 {
-    protected $table = 'detail_pesanan';
+    // INI KUNCINYA:
+    // Kita kasih tahu Laravel: "Eh, tabel buat model ini namanya 't_pesanan_produk' ya!"
+    protected $table = 't_pesanan_produk'; 
 
     protected $fillable = [
         'pesanan_id',
@@ -18,13 +19,5 @@ class DetailPesanan extends Model
         'catatan_custom',
     ];
 
-    public function produk(): BelongsTo
-    {
-        return $this->belongsTo(Produk::class);
-    }
-
-    public function pesanan(): BelongsTo
-    {
-        return $this->belongsTo(Pesanan::class);
-    }
+    // ... relasi ke Produk dan Pesanan tetap sama ...
 }

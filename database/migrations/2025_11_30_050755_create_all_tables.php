@@ -109,10 +109,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 8. Tabel Detail Pesanan (Order Items -> Detail_Pesanan)
-        Schema::create('detail_pesanan', function (Blueprint $table) {
+        // 8. Tabel Detail Pesanan (Dulu: detail_pesanan -> Sekarang: t_pesanan_produk)
+        Schema::create('t_pesanan_produk', function (Blueprint $table) { // <--- GANTI INI
             $table->id();
-            // Perhatikan: constrained('pesanan') merujuk ke nama tabel baru
             $table->foreignId('pesanan_id')->constrained('pesanan')->onDelete('cascade');
             $table->foreignId('produk_id')->constrained('produk');
             $table->integer('jumlah');
@@ -153,7 +152,7 @@ return new class extends Migration
         // Urutan drop dibalik
         Schema::dropIfExists('schedule');
         Schema::dropIfExists('pembayaran');
-        Schema::dropIfExists('detail_pesanan');
+        Schema::dropIfExists('t_pesanan_produk');
         Schema::dropIfExists('pesanan');
         Schema::dropIfExists('produk');
         Schema::dropIfExists('alamat');

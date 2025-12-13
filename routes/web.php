@@ -13,7 +13,7 @@ use App\Livewire\Admin\Produk\Edit;
 use App\Livewire\Admin\Pegawai\Index as PegawaiIndex;
 use App\Livewire\Admin\Pegawai\Create as PegawaiCreate;
 use App\Livewire\Admin\Pegawai\Edit as PegawaiEdit;
-
+use App\Livewire\Admin\Pelanggan\Index as PelangganIndex;
 
 // 1. Halaman Utama (Home)
 Route::get('/', Home::class)->name('home');
@@ -56,4 +56,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
     Route::get('/pegawai', PegawaiIndex::class)->name('admin.pegawai');
     Route::get('/pegawai/create', PegawaiCreate::class)->name('admin.pegawai.create');
     Route::get('/pegawai/{id}/edit', PegawaiEdit::class)->name('admin.pegawai.edit');
+
+
+    // Route Pelanggan
+    Route::get('/pelanggan', PelangganIndex::class)->name('admin.pelanggan');
+
 });
