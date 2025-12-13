@@ -14,6 +14,9 @@ use App\Livewire\Admin\Pegawai\Index as PegawaiIndex;
 use App\Livewire\Admin\Pegawai\Create as PegawaiCreate;
 use App\Livewire\Admin\Pegawai\Edit as PegawaiEdit;
 use App\Livewire\Admin\Pelanggan\Index as PelangganIndex;
+use App\Livewire\ProdukDetail;
+
+
 
 // 1. Halaman Utama (Home)
 Route::get('/', Home::class)->name('home');
@@ -35,6 +38,8 @@ Route::get('/profile', Profile::class)->name('profile')->middleware('auth');
 // Route Logout yang baru (hanya untuk user yang sudah terautentikasi)
 Route::post('/logout', [GoogleAuthController::class, 'logout'])->name('logout')->middleware('auth');
 
+// 6. Detail Produk
+Route::get('/produk/{id}', ProdukDetail::class)->name('produk.detail');
 
 
 // WILAYAH KEKUASAAN ADMIN (Dipagari Middleware is_admin)
