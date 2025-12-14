@@ -24,36 +24,43 @@ class Payment extends Component
             abort(403, 'Akses Ditolak');
         }
 
-        // 3. Kalau sudah lunas & tidak ada tagihan, lempar balik
-        // Kecuali statusnya 'siap_dikirim'/'siap_dipasang' user masih boleh lihat resi/info
-        if ($this->pesanan->status === 'lunas' || $this->pesanan->status === 'selesai') {
-            // return redirect()->route('home'); // Opsional: matikan ini kalau user mau lihat history lunas
-        }
-
-        // KONFIGURASI MIDTRANS
+        // 3. Konfigurasi Midtrans
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
 
-        // LOGIC PENENTUAN TOKEN
-        // A. Jika Status = Menunggu Pelunasan (User mau lunasin sisa)
+        // 4. LOGIC PENENTUAN TOKEN
+        
+        // KASUS A: Fase PELUNASAN (User mau lunasin sisa)
         if ($this->pesanan->status == 'menunggu_pelunasan') {
+            
+            // Kita SELALU buat token baru khusus pelunasan agar nominal update
+            // (Misal: Admin baru input ongkir, jadi total tagihan berubah)
             $this->buatTokenPelunasan();
-        } 
-        // B. Jika Token Kosong (Kasus DP Awal / Full Payment Awal)
-        elseif (empty($this->pesanan->snap_token)) {
-            $this->buatTokenBaru();
-        }
 
-        // Ambil token terakhir dari DB buat dikirim ke View
-        $this->snapToken = $this->pesanan->snap_token;
+        } 
+        // KASUS B: Fase AWAL (DP / Full Payment saat checkout)
+        elseif ($this->pesanan->status == 'menunggu_pembayaran') {
+            
+            // Kalau token belum ada, buat baru.
+            if (empty($this->pesanan->snap_token)) {
+                $this->buatTokenAwal();
+            } else {
+                // Kalau sudah ada, pakai yang lama
+                $this->snapToken = $this->pesanan->snap_token;
+            }
+        }
+        // KASUS C: Status lain (Sudah lunas/selesai)
+        else {
+            $this->snapToken = $this->pesanan->snap_token;
+        }
     }
 
     public function buatTokenPelunasan()
     {
-        // PENTING: Midtrans menolak Order ID yang sama.
-        // Jadi kita buat ID Transaksi Baru: INV-XXX-PL-TIMESTAMP
+        // PENTING: Gunakan timestamp agar ID Transaksi UNIK.
+        // Midtrans akan menolak jika kita pakai ID yang sama dengan pembayaran DP.
         $transactionId = $this->pesanan->nomor_order . '-PL-' . time();
 
         $params = [
@@ -76,18 +83,20 @@ class Payment extends Component
         ];
 
         try {
-            // Minta Token & Update DB
             $newToken = Snap::getSnapToken($params);
+            
+            // Simpan token baru ke database
             $this->pesanan->update(['snap_token' => $newToken]);
+            $this->snapToken = $newToken;
+            
         } catch (\Exception $e) {
-            // Handle error connection midtrans
+            session()->flash('error', 'Gagal terhubung ke Midtrans: ' . $e->getMessage());
         }
     }
 
-    public function buatTokenBaru()
+    public function buatTokenAwal()
     {
-        // Ini logic standar buat pembayaran awal (DP/Full)
-        // Hitung nominal yang harus dibayar SEKARANG (bukan total project)
+        // Hitung nominal (DP 50% atau Full 100%)
         $amount = ($this->pesanan->jenis_pembayaran == 'dp') 
                     ? $this->pesanan->jumlah_dp 
                     : $this->pesanan->grand_total;
@@ -106,7 +115,7 @@ class Payment extends Component
                     'id' => 'TAGIHAN-AWAL',
                     'price' => (int) $amount,
                     'quantity' => 1,
-                    'name' => 'Pembayaran Order ' . $this->pesanan->nomor_order,
+                    'name' => 'Pembayaran Order (DP/Full)',
                 ]
             ]
         ];
@@ -114,8 +123,9 @@ class Payment extends Component
         try {
             $newToken = Snap::getSnapToken($params);
             $this->pesanan->update(['snap_token' => $newToken]);
+            $this->snapToken = $newToken;
         } catch (\Exception $e) {
-            // Handle error
+             session()->flash('error', 'Gagal terhubung ke Midtrans');
         }
     }
 

@@ -22,50 +22,88 @@ class Show extends Component
     public $pegawai_id;
     public $tgl_pengerjaan;
     public $jam_mulai;
+
     public $status_manual;
 
     public function mount($id)
     {
+        // Load data pesanan beserta relasinya
         $this->pesanan = Pesanan::with(['detailPesanan.produk', 'pembayaran', 'schedule.pegawai', 'user'])->findOrFail($id);
         
-        // Load data existing kalau ada
+        // Load data existing schedule kalau ada (untuk form edit jadwal)
         if ($this->pesanan->schedule) {
             $this->pegawai_id = $this->pesanan->schedule->pegawai_id;
             $this->tgl_pengerjaan = $this->pesanan->schedule->tgl_pengerjaan;
             $this->jam_mulai = $this->pesanan->schedule->jam_mulai;
         }
+
+        // Load data ongkir existing kalau ada
+        if (!$this->pesanan->butuh_pemasangan && $this->pesanan->biaya_layanan > 0) {
+            $this->ongkir_real = $this->pesanan->biaya_layanan;
+        }
+        
+        // Load resi
+        if ($this->pesanan->no_resi) {
+            $this->no_resi = $this->pesanan->no_resi;
+        }
     }
 
-// --- ACTION 1: UPDATE ONGKIR (Barang Siap Kirim) ---
+    // --- ACTION 1: UPDATE ONGKIR (Barang Siap Kirim) ---
     public function simpanOngkir()
     {
         $this->validate([
             'ongkir_real' => 'required|numeric|min:0',
         ]);
 
-        // ... logic hitung sisa tagihan sama ...
-        // ... bedanya cuma di status ...
+        // 1. Definisikan Biaya Layanan Baru (Ongkir Real)
+        $biayaLayananBaru = $this->ongkir_real; 
 
+        // 2. Hitung Grand Total Baru
+        // Rumus: Total Belanja Barang + Ongkir Real
+        $newGrandTotal = $this->pesanan->total_belanja + $biayaLayananBaru;
+
+        // 3. Hitung Sisa Tagihan Baru
+        // Kita cari tahu dulu berapa uang yang SUDAH masuk (DP)
+        // Rumus: Grand Total Lama - Sisa Tagihan Lama = Uang Masuk
+        $uangSudahMasuk = $this->pesanan->grand_total - $this->pesanan->sisa_tagihan;
+        
+        // Sisa Tagihan Baru = Grand Total Baru - Uang Masuk
+        $sisaBaru = $newGrandTotal - $uangSudahMasuk;
+
+        // 4. Update Database
         $this->pesanan->update([
-            'biaya_layanan' => $this->pesanan->biaya_layanan + $this->ongkir_real,
+            'biaya_layanan' => $biayaLayananBaru,
             'grand_total' => $newGrandTotal,
             'sisa_tagihan' => $sisaBaru,
             
-            // Logic: Ongkir diinput = Barang Jadi = Minta Duit
+            // Logic: Ongkir diinput = Barang Jadi = Tagih Pelunasan
             'status' => 'menunggu_pelunasan' 
         ]);
 
-        session()->flash('message', 'Ongkir diupdate. User diminta melunasi tagihan.');
+        session()->flash('message', 'Ongkir berhasil diupdate. Tagihan pelunasan user telah disesuaikan.');
     }
 
     // --- ACTION 2: ASSIGN TEKNISI (Order Jasa) ---
     public function assignTeknisi()
     {
-        // ... validasi sama ...
-        
-        // ... logic schedule sama ...
+        $this->validate([
+            'pegawai_id' => 'required|exists:pegawai,id',
+            'tgl_pengerjaan' => 'required|date|after_or_equal:today',
+            'jam_mulai' => 'required',
+        ]);
 
-        // PERUBAHAN STATUS DISINI
+        // Update atau Create Schedule
+        Schedule::updateOrCreate(
+            ['pesanan_id' => $this->pesanan->id],
+            [
+                'pegawai_id' => $this->pegawai_id,
+                'tgl_pengerjaan' => $this->tgl_pengerjaan,
+                'jam_mulai' => $this->jam_mulai,
+                'status' => 'terjadwal'
+            ]
+        );
+
+        // Logic Update Status Pesanan
         if ($this->pesanan->sisa_tagihan > 0) {
             // Kalau masih ada sisa tagihan (DP), minta pelunasan
             $this->pesanan->update(['status' => 'menunggu_pelunasan']);
@@ -80,7 +118,31 @@ class Show extends Component
     // --- ACTION 3: SELESAIKAN ORDER ---
     public function tandaiSelesai()
     {
-        // ... logic sama ...
+        // Validasi Resi jika ini order kiriman
+        if (!$this->pesanan->butuh_pemasangan) {
+            $this->validate([
+                'no_resi' => 'required|string|min:3'
+            ], [
+                'no_resi.required' => 'Nomor Resi wajib diisi sebelum menyelesaikan order kiriman.'
+            ]);
+            
+            // Simpan resi ke DB (Pastikan tabel pesanan punya kolom no_resi)
+            $this->pesanan->update([
+                'no_resi' => $this->no_resi,
+                'status' => 'selesai'
+            ]);
+
+        } else {
+            // Jika jasa pasang, langsung selesai
+            $this->pesanan->update(['status' => 'selesai']);
+        }
+        
+        // Update status schedule juga jika ada
+        if ($this->pesanan->schedule) {
+            $this->pesanan->schedule->update(['status' => 'selesai']);
+        }
+        
+        session()->flash('message', 'Order berhasil diselesaikan!');
     }
 
     // --- ACTION 4: MANUAL STATUS (Update Listnya) ---
@@ -92,8 +154,15 @@ class Show extends Component
         ]);
 
         $this->pesanan->update(['status' => $this->status_manual]);
-        // ...
+        
+        // Sinkronisasi status schedule jika diubah ke selesai
+        if ($this->status_manual == 'selesai' && $this->pesanan->schedule) {
+            $this->pesanan->schedule->update(['status' => 'selesai']);
+        }
+
+        session()->flash('message', 'Status berhasil diubah secara manual.');
     }
+
     public function render()
     {
         return view('livewire.admin.pesanan.show', [

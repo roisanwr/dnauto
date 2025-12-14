@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pesanan;
-use App\Models\Pembayaran; 
+use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Notification;
-use Illuminate\Support\Str; // Tambah ini
+use Illuminate\Support\Str; // Jangan lupa import ini
 
 class PaymentCallbackController extends Controller
 {
@@ -23,26 +23,22 @@ class PaymentCallbackController extends Controller
 
             $transaction = $notif->transaction_status;
             $type = $notif->payment_type;
-            $midtransOrderId = $notif->order_id; // Ini bisa jadi INV-123 atau INV-123-PL-999
+            $midtransOrderId = $notif->order_id; // Contoh: INV-123-PL-173849
             $fraud = $notif->fraud_status;
 
-            // --- LOGIC PEMBERSIHAN ID ---
-            // Kita harus cari Nomor Order Asli di Database
-            // Hapus suffix "-PL-..." kalau ada
-            $realOrderNumber = $midtransOrderId;
-            
+            // --- 1. BERSIHKAN ORDER ID ---
+            // Kita harus buang embel-embel "-PL-..." biar ketemu di database
+            $realOrderId = $midtransOrderId;
             if (Str::contains($midtransOrderId, '-PL-')) {
-                // Ambil bagian sebelum '-PL-'
                 $parts = explode('-PL-', $midtransOrderId);
-                $realOrderNumber = $parts[0]; 
+                $realOrderId = $parts[0]; // Ambil "INV-123" nya saja
             }
-            // ---------------------------
 
-            // Cari Pesanan pakai Nomor Asli
-            $pesanan = Pesanan::where('nomor_order', $realOrderNumber)->lockForUpdate()->first();
+            // --- 2. CARI PESANAN ---
+            $pesanan = Pesanan::where('nomor_order', $realOrderId)->lockForUpdate()->first();
 
             if (!$pesanan) {
-                return response()->json(['message' => 'Order not found: ' . $realOrderNumber], 404);
+                return response()->json(['message' => 'Order not found: ' . $realOrderId], 404);
             }
 
             // Tentukan Status Midtrans
@@ -57,28 +53,24 @@ class PaymentCallbackController extends Controller
                 $midtransStatus = 'failed';
             }
 
-            // --- LOGIC UPDATE STATUS DN AUTO ---
-            
+            // --- 3. UPDATE STATUS DN AUTO ---
             if ($midtransStatus == 'success') {
                 
-                // 1. CEK: Apakah ini Pelunasan?
-                // Tandanya: Status pesanan 'menunggu_pelunasan' ATAU Order ID mengandung '-PL-'
-                if ($pesanan->status == 'menunggu_pelunasan' || Str::contains($midtransOrderId, '-PL-')) {
+                // LOGIC PELUNASAN
+                // Cek apakah ID dari Midtrans mengandung "-PL-" ATAU status memang menunggu pelunasan
+                if (Str::contains($midtransOrderId, '-PL-') || $pesanan->status == 'menunggu_pelunasan') {
                     
-                    $pesanan->update([
-                        'status' => 'lunas', // Atau 'siap_dikirim'/'siap_dipasang' tergantung flow kamu
-                        'sisa_tagihan' => 0,
-                        // Kalau ini order jasa, ubah ke siap_dipasang
-                        // Kalau order kirim, ubah ke siap_dikirim (opsional logic disini)
-                    ]);
+                    // Update jadi LUNAS (atau siap_dipasang/dikirim)
+                    $pesanan->sisa_tagihan = 0; // Pastikan 0
                     
-                    // Khusus logic otomatis status akhir
                     if ($pesanan->butuh_pemasangan) {
-                        $pesanan->update(['status' => 'siap_dipasang']);
+                        $pesanan->status = 'siap_dipasang';
                     } else {
-                        $pesanan->update(['status' => 'siap_dikirim']);
+                        $pesanan->status = 'siap_dikirim';
                     }
+                    $pesanan->save();
 
+                    // Catat Log Pembayaran
                     Pembayaran::create([
                         'pesanan_id' => $pesanan->id,
                         'tipe' => 'pelunasan',
@@ -88,19 +80,16 @@ class PaymentCallbackController extends Controller
                     ]);
 
                 } 
-                // 2. Kalau bukan pelunasan, berarti Pembayaran Awal (DP/Full)
+                // LOGIC PEMBAYARAN AWAL (DP/FULL)
                 elseif ($pesanan->status == 'menunggu_pembayaran') {
                     
-                    $statusBaru = 'produksi'; // Default masuk produksi
+                    $pesanan->status = 'produksi'; // Masuk produksi
                     
-                    $pesanan->update([
-                        'status' => $statusBaru,
-                    ]);
-                    
-                    // Kalau Full Payment, nol-kan sisa tagihan
-                    if($pesanan->jenis_pembayaran == 'lunas') {
-                        $pesanan->update(['sisa_tagihan' => 0]);
+                    // Kalau full payment, sisa tagihan 0
+                    if($pesanan->jenis_pembayaran == 'lunas'){
+                        $pesanan->sisa_tagihan = 0;
                     }
+                    $pesanan->save();
 
                     Pembayaran::create([
                         'pesanan_id' => $pesanan->id,
@@ -110,9 +99,9 @@ class PaymentCallbackController extends Controller
                         'status' => 'valid'
                     ]);
                 }
-            } 
+            }
+            // Handle Failed/Cancel
             elseif ($midtransStatus == 'failed') {
-                // Jangan batalkan order kalau pelunasan gagal, cuma info aja
                 if ($pesanan->status == 'menunggu_pembayaran') {
                     $pesanan->update(['status' => 'batal']);
                 }

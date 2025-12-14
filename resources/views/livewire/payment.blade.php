@@ -1,106 +1,29 @@
-<?php
+<div class="max-w-2xl mx-auto bg-white rounded-xl p-6 shadow-sm border border-orange-50">
+    <h2 class="text-lg font-bold text-stone-800">Pembayaran Pesanan</h2>
 
-namespace App\Livewire;
+    @if(!isset($pesanan))
+        <div class="mt-4 text-sm text-gray-500">Data pesanan tidak ditemukan.</div>
+    @else
+        <div class="mt-4">
+            <div class="text-sm text-gray-500">No. Order</div>
+            <div class="text-lg font-semibold text-orange-600">{{ $pesanan->nomor_order }}</div>
+            <div class="mt-2 text-sm text-gray-500">Total</div>
+            <div class="text-xl font-bold">Rp {{ number_format($pesanan->grand_total, 0, ',', '.') }}</div>
+        </div>
 
-use App\Models\Pesanan;
-use Livewire\Component;
-use Midtrans\Config;
-use Midtrans\Snap;
-use Illuminate\Support\Str;
+        @if($snapToken)
+            <div class="mt-6">
+                <button id="pay-button" class="px-4 py-2 bg-orange-500 text-white rounded-lg shadow-sm hover:bg-orange-600 transition-colors">Bayar Sekarang</button>
+            </div>
 
-class Payment extends Component
-{
-    public $pesanan;
-    public $snapToken;
-
-    public function mount($id)
-    {
-        // Cari pesanan
-        $this->pesanan = Pesanan::findOrFail($id);
-
-        // KONFIGURASI MIDTRANS
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = config('midtrans.is_sanitized');
-        Config::$is3ds = config('midtrans.is_3ds');
-
-        // LOGIC PENENTUAN TOKEN
-        // 1. Jika Status = Menunggu Pelunasan (User mau lunasin)
-        if ($this->pesanan->status == 'menunggu_pelunasan') {
-            $this->buatTokenPelunasan();
-        } 
-        // 2. Jika Token Kosong (Kasus error / token expired)
-        elseif (empty($this->pesanan->snap_token)) {
-            $this->buatTokenBaru();
-        }
-
-        // Ambil token terakhir dari DB
-        $this->snapToken = $this->pesanan->snap_token;
-    }
-
-    public function buatTokenPelunasan()
-    {
-        // PENTING: Midtrans menolak Order ID yang sama.
-        // Jadi kita buat ID Transaksi Baru: INV-XXX-PL-TIMESTAMP
-        $transactionId = $this->pesanan->nomor_order . '-PL-' . time();
-
-        $params = [
-            'transaction_details' => [
-                'order_id' => $transactionId,
-                'gross_amount' => (int) $this->pesanan->sisa_tagihan, // Pake Sisa Tagihan!
-            ],
-            'customer_details' => [
-                'first_name' => $this->pesanan->snap_nama_penerima,
-                'phone' => $this->pesanan->snap_no_hp,
-            ],
-            'item_details' => [
-                [
-                    'id' => 'PELUNASAN',
-                    'price' => (int) $this->pesanan->sisa_tagihan,
-                    'quantity' => 1,
-                    'name' => 'Pelunasan Order ' . $this->pesanan->nomor_order,
-                ]
-            ]
-        ];
-
-        // Minta Token & Update DB
-        $newToken = Snap::getSnapToken($params);
-        $this->pesanan->update(['snap_token' => $newToken]);
-    }
-
-    public function buatTokenBaru()
-    {
-        // Ini logic standar buat pembayaran awal (DP/Full) kalau token hilang
-        // Pake Order ID asli gapapa kalau belum pernah sukses bayar
-        $amount = ($this->pesanan->jenis_pembayaran == 'dp') 
-                    ? $this->pesanan->jumlah_dp 
-                    : $this->pesanan->grand_total;
-
-        $params = [
-            'transaction_details' => [
-                'order_id' => $this->pesanan->nomor_order, // Pake No Order Asli
-                'gross_amount' => (int) $amount,
-            ],
-            'customer_details' => [
-                'first_name' => $this->pesanan->snap_nama_penerima,
-                'phone' => $this->pesanan->snap_no_hp,
-            ],
-            'item_details' => [
-                [
-                    'id' => 'TAGIHAN-AWAL',
-                    'price' => (int) $amount,
-                    'quantity' => 1,
-                    'name' => 'Pembayaran Order ' . $this->pesanan->nomor_order,
-                ]
-            ]
-        ];
-
-        $newToken = Snap::getSnapToken($params);
-        $this->pesanan->update(['snap_token' => $newToken]);
-    }
-
-    public function render()
-    {
-        return view('livewire.payment');
-    }
-}
+            <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+            <script>
+                document.getElementById('pay-button').addEventListener('click', function () {
+                    snap.pay('{{ $snapToken }}');
+                });
+            </script>
+        @else
+            <div class="mt-6 text-sm text-gray-500">Token pembayaran belum tersedia. Coba refresh halaman.</div>
+        @endif
+    @endif
+</div>
