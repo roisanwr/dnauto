@@ -19,6 +19,7 @@ use App\Livewire\Checkout;
 use App\Livewire\Payment;
 use App\Livewire\History;
 use App\Livewire\Admin\Pesanan\Index as PesananIndex;
+use App\Livewire\Admin\Pesanan\Show as PesananShow;
 
 
 // 1. Halaman Utama (Home)
@@ -52,6 +53,9 @@ Route::get('/payment/{id}', App\Livewire\Payment::class)->name('payment');
 
 // 9. History
 Route::get('/riwayat', History::class)->name('history')->middleware('auth');
+
+// 10. Detail Pesanan (hanya untuk user yang sudah login)
+Route::get('/pesanan/{id}', PesananShow::class)->name('admin.pesanan.show');
 
 // WILAYAH KEKUASAAN ADMIN (Dipagari Middleware is_admin)
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {

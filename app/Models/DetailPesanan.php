@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+
 
 class DetailPesanan extends Model
 {
@@ -19,5 +22,16 @@ class DetailPesanan extends Model
         'catatan_custom',
     ];
 
-    // ... relasi ke Produk dan Pesanan tetap sama ...
+    // 2. INI YANG TADI BIKIN ERROR (Fungsi Relasi ke Produk)
+    // Tanpa ini, Laravel gak tau cara ambil nama & gambar produk
+    public function produk(): BelongsTo
+    {
+        return $this->belongsTo(Produk::class, 'produk_id');
+    }
+
+    // Opsional: Relasi balik ke Pesanan
+    public function pesanan(): BelongsTo
+    {
+        return $this->belongsTo(Pesanan::class, 'pesanan_id');
+    }
 }

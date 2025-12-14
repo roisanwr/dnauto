@@ -5,6 +5,9 @@ namespace App\Livewire\Admin\Pesanan;
 use App\Models\Pesanan;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Layout;
+
+#[Layout('components.layouts.admin')] // <--- 2. Tambahkan Baris Ini
 
 class Index extends Component
 {

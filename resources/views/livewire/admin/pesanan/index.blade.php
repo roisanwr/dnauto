@@ -49,9 +49,10 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 {{-- Tombol Detail (Nanti kita buat) --}}
-                                <button class="text-gray-400 hover:text-orange-600 transition">
+                                {{-- UBAH JADI INI: --}}
+                                <a href="{{ route('admin.pesanan.show', $order->id) }}" wire:navigate class="text-gray-400 hover:text-orange-600 transition">
                                     <i data-lucide="eye" class="w-5 h-5"></i>
-                                </button>
+                                </a>
                             </td>
                         </tr>
                     @empty

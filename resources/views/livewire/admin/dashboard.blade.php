@@ -1,144 +1,110 @@
-<div class="max-w-7xl mx-auto space-y-8">
-                
+<div class="space-y-8">
+    
+    {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Workshop Overview</h1>
-        <p class="text-sm text-gray-500 mt-1">Update harian dan performa bengkel hari ini.</p>
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+        <p class="text-gray-500">Pantau performa toko kamu hari ini.</p>
     </div>
 
+    {{-- KARTU STATISTIK --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors cursor-default">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Total Mobil Hari Ini</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">12</p>
-                </div>
-                <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-                    <i data-lucide="car-front" class="w-5 h-5"></i>
-                </div>
+        {{-- Card 1: Omzet --}}
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div class="p-3 bg-green-100 text-green-600 rounded-lg">
+                <i data-lucide="banknote" class="w-6 h-6"></i>
             </div>
-            <div class="mt-4 flex items-center text-xs">
-                <span class="text-green-600 font-medium flex items-center gap-1">
-                    <i data-lucide="arrow-up" class="w-3 h-3"></i> 12%
-                </span>
-                <span class="text-gray-400 ml-1">vs kemarin</span>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Pendapatan</p>
+                <p class="text-2xl font-bold text-gray-900">Rp {{ number_format($total_pendapatan, 0, ',', '.') }}</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors cursor-default">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Pendapatan Hari Ini</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">Rp 4.2M</p>
-                </div>
-                <div class="p-2 bg-green-50 rounded-lg text-green-600">
-                    <i data-lucide="banknote" class="w-5 h-5"></i>
-                </div>
+        {{-- Card 2: Pesanan Baru --}}
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div class="p-3 bg-blue-100 text-blue-600 rounded-lg">
+                <i data-lucide="shopping-bag" class="w-6 h-6"></i>
             </div>
-            <div class="mt-4 flex items-center text-xs">
-                <span class="text-green-600 font-medium flex items-center gap-1">
-                    <i data-lucide="arrow-up" class="w-3 h-3"></i> 8%
-                </span>
-                <span class="text-gray-400 ml-1">vs kemarin</span>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Order Aktif</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $pesanan_baru }}</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors cursor-default">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Menunggu Sparepart</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">3</p>
-                </div>
-                <div class="p-2 bg-orange-50 rounded-lg text-orange-600">
-                    <i data-lucide="box" class="w-5 h-5"></i>
-                </div>
+        {{-- Card 3: Produk --}}
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div class="p-3 bg-orange-100 text-orange-600 rounded-lg">
+                <i data-lucide="package" class="w-6 h-6"></i>
             </div>
-            <div class="mt-4 flex items-center text-xs">
-                <span class="text-red-500 font-medium flex items-center gap-1">
-                    <i data-lucide="arrow-up" class="w-3 h-3"></i> 2
-                </span>
-                <span class="text-gray-400 ml-1">pesanan urgent</span>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Produk</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $total_produk }}</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors cursor-default">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Selesai Dikerjakan</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">5</p>
-                </div>
-                <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
-                    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                </div>
+        {{-- Card 4: Customer --}}
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+            <div class="p-3 bg-purple-100 text-purple-600 rounded-lg">
+                <i data-lucide="users" class="w-6 h-6"></i>
             </div>
-            <div class="mt-4 flex items-center text-xs">
-                <span class="text-gray-500 font-medium">
-                    Siap diambil customer
-                </span>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Pelanggan</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $total_user }}</p>
             </div>
         </div>
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
-            <h2 class="text-base font-semibold text-gray-900">Antrean Servis Saat Ini</h2>
-            <div class="flex gap-2">
-                <button class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-                    <i data-lucide="filter" class="w-3 h-3"></i> Filter
-                </button>
-                <button class="px-3 py-1.5 text-xs font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2">
-                    <i data-lucide="plus" class="w-3 h-3"></i> Entri Baru
-                </button>
-            </div>
+    {{-- TABEL PESANAN TERBARU --}}
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-gray-900">Transksi Terbaru</h3>
+            <a href="{{ route('admin.pesanan') }}" class="text-sm text-orange-600 hover:underline">Lihat Semua</a>
         </div>
-
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 text-gray-500">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Polisi</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pemilik</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servis</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mekanik</th>
-                        <th class="relative px-6 py-3"><span class="sr-only">Aksi</span></th>
+                        <th class="px-6 py-3">No. Order</th>
+                        <th class="px-6 py-3">Nama Customer</th>
+                        <th class="px-6 py-3">Total</th>
+                        <th class="px-6 py-3">Status</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    
-                    <tr class="hover:bg-gray-50 transition-colors group">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-semibold text-gray-900">B 1234 CD</div>
-                            <div class="text-xs text-gray-400">Masuk: 08:30</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">Honda Civic Turbo</div>
-                            <div class="text-xs text-gray-500">2021</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-6 w-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] text-white font-bold mr-2">A</div>
-                                <div class="text-sm text-gray-900">Andi Saputra</div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            Ganti Oli, Cek Rem
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-100">
-                                <span class="w-1.5 h-1.5 bg-yellow-400 rounded-full mr-1.5"></span>
-                                Proses
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Budi</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button class="text-gray-400 hover:text-orange-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
-                        </td>
-                    </tr>
-                    
-                    </tbody>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($pesanan_terbaru as $order)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-3 font-medium text-gray-900">
+                                #{{ $order->nomor_order }}
+                            </td>
+                            <td class="px-6 py-3">
+                                {{ $order->snap_nama_penerima }}
+                            </td>
+                            <td class="px-6 py-3 font-bold text-gray-700">
+                                Rp {{ number_format($order->grand_total, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-3">
+                                @php
+                                    $color = match($order->status) {
+                                        'lunas' => 'text-green-600 bg-green-50 border-green-200',
+                                        'menunggu_pembayaran' => 'text-yellow-600 bg-yellow-50 border-yellow-200',
+                                        'sedang_dikerjakan' => 'text-blue-600 bg-blue-50 border-blue-200',
+                                        'selesai' => 'text-gray-600 bg-gray-50 border-gray-200',
+                                        default => 'text-red-600 bg-red-50 border-red-200'
+                                    };
+                                @endphp
+                                <span class="px-2 py-1 rounded text-xs font-bold border {{ $color }}">
+                                    {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-gray-400">Belum ada transaksi.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
             </table>
         </div>
     </div>
+
 </div>

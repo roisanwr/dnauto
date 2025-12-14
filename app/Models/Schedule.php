@@ -7,21 +7,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Schedule extends Model
 {
-    protected $table = 'schedule';
+    // Pastikan nama tabel benar (singular sesuai migrasi kamu)
+    protected $table = 'schedule'; 
 
     protected $fillable = [
         'pesanan_id',
         'pegawai_id',
         'tgl_pengerjaan',
         'jam_mulai',
-        'status',
+        'status', // terjadwal, selesai, reschedule
     ];
 
+    // Relasi ke Pesanan
     public function pesanan(): BelongsTo
     {
         return $this->belongsTo(Pesanan::class);
     }
 
+    // Relasi ke Pegawai (Teknisi)
     public function pegawai(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class);
