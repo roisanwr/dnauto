@@ -64,14 +64,13 @@
                     <span class="ml-3 whitespace-nowrap" x-show="sidebarOpen">Cek Pesanan</span>
                 </a>
                 {{-- Contoh Link Riwayat --}}
-                <a href="{{ route('history') }}" class="{{ request()->routeIs('history') ? 'bg-stone-800 text-white' : 'text-stone-600 hover:bg-stone-100' }} group flex items-center px-2 py-2 text-base font-medium rounded-md">
-                    
+                <a href="{{ route('history') }}" class="{{ $menuClass }} {{ request()->routeIs('history') ? $activeClass : $inactiveClass }}">
                     {{-- Ikon Jam / History (Opsional) --}}
-                    <svg class="mr-4 h-6 w-6 flex-shrink-0 text-stone-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <svg class="w-6 h-6 shrink-0 {{ request()->routeIs('history') ? 'text-orange-500' : 'text-stone-400 group-hover:text-stone-600' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
 
-                    Riwayat Pesanan
+                    <span class="ml-3 whitespace-nowrap" x-show="sidebarOpen">Riwayat Pesanan</span>
                 </a>
             </nav>
 
@@ -177,26 +176,26 @@
         <nav class="md:hidden fixed bottom-6 inset-x-4 h-16 bg-white/95 backdrop-blur-md rounded-2xl shadow-pastel z-50 border border-white/40">
             <div class="grid grid-cols-4 h-full items-center justify-items-center px-2">
                 
-                <a href="/" wire:navigate class="flex flex-col items-center justify-center w-full h-full space-y-1">
-                    <div class="{{ request()->is('/') ? 'text-orange-500 bg-orange-50' : 'text-stone-300' }} p-2 rounded-xl transition-all">
+                <a href="/" wire:navigate class="group flex flex-col items-center justify-center w-full h-full space-y-1">
+                    <div class="p-2 rounded-xl transition-all {{ request()->is('/') ? 'text-orange-500 bg-orange-50' : 'text-stone-300 group-hover:text-stone-500 group-hover:bg-orange-50' }}">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     </div>
                 </a>
 
-                <a href="#" class="flex flex-col items-center justify-center w-full h-full space-y-1">
-                     <div class="text-stone-300 p-2 rounded-xl">
+                <a href="#" class="group flex flex-col items-center justify-center w-full h-full space-y-1">
+                     <div class="p-2 rounded-xl transition-all text-stone-300 group-hover:text-stone-500 group-hover:bg-orange-50">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                     </div>
                 </a>
 
-                <a href="#" class="flex flex-col items-center justify-center w-full h-full space-y-1">
-                     <div class="text-stone-300 p-2 rounded-xl">
+                <a href="#" class="group flex flex-col items-center justify-center w-full h-full space-y-1">
+                     <div class="p-2 rounded-xl transition-all text-stone-300 group-hover:text-stone-500 group-hover:bg-orange-50">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                     </div>
                 </a>
 
-                <a href="#" class="flex flex-col items-center justify-center w-full h-full space-y-1">
-                     <div class="text-stone-300 p-2 rounded-xl">
+                <a href="#" class="group flex flex-col items-center justify-center w-full h-full space-y-1">
+                     <div class="p-2 rounded-xl transition-all text-stone-300 group-hover:text-stone-500 group-hover:bg-orange-50">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                     </div>
                 </a>

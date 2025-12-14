@@ -13,6 +13,7 @@ class Produk extends Model
         'nama_produk',
         'deskripsi',
         'harga',
+        'harga_jasa', // <--- TAMBAHKAN INI
         'kategori',
         'estimasi_hari_kerja',
         'gambar',

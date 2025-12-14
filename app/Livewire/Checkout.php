@@ -4,24 +4,33 @@ namespace App\Livewire;
 
 use App\Models\Produk;
 use App\Models\Pesanan;
-use App\Models\DetailPesanan;
+use App\Models\DetailPesanan; // Note: Ini t_pesanan_produk di DB baru, pastikan modelnya menyesuaikan
+use App\Models\Alamat;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use Midtrans\Config; // <--- Import Library Midtrans
-use Midtrans\Snap;   // <--- Import Library Midtrans
+use Midtrans\Config;
+use Midtrans\Snap;
+use Illuminate\Support\Str;
 
 class Checkout extends Component
 {
     public $produk;
     public $qty = 1;
+
+    // Data Pilihan User
+    public $alamat_id; // ID Alamat yang dipilih
+    public $layanan = 'bengkel'; // 'bengkel', 'home_service', 'kirim'
+    public $tipe_pembayaran = 'dp'; // 'dp', 'lunas'
     
-    public $nama_penerima;
-    public $no_hp;
-    public $alamat_lengkap;
-    public $butuh_pemasangan = false;
+    // Variabel Hitungan
+    public $harga_jasa_produk = 0; // Jasa pasang per item (dari DB produk)
+    public $biaya_transport = 0;   // Ongkos bensin teknisi
+    public $biaya_layanan_total = 0; // Gabungan Jasa + Transport
     
-    public $biaya_pasang = 0;
     public $grand_total = 0;
+    public $nominal_yang_harus_dibayar = 0; // Angka yang dikirim ke Midtrans
+
+    public $error_message = ''; // Buat nampilin error kalau area gak tercover
 
     public function mount($produkId)
     {
@@ -31,58 +40,140 @@ class Checkout extends Component
 
         $this->produk = Produk::findOrFail($produkId);
         
-        $user = Auth::user();
-        $this->nama_penerima = $user->name;
-        $this->no_hp = $user->no_hp ?? '';
-        
+        // Ambil alamat user (kalau ada), set default ke primary
+        $primaryAddress = Alamat::where('user_id', Auth::id())->where('is_primary', true)->first();
+        if ($primaryAddress) {
+            $this->alamat_id = $primaryAddress->id;
+        } else {
+            // Kalau gak punya alamat primary, ambil sembarang alamat dia
+            $firstAddress = Alamat::where('user_id', Auth::id())->first();
+            $this->alamat_id = $firstAddress ? $firstAddress->id : null;
+        }
+
         $this->hitungTotal();
     }
 
-    public function updatedButuhPemasangan()
+    // Setiap user ganti opsi, hitung ulang
+    public function updated($propertyName)
     {
         $this->hitungTotal();
     }
 
     public function hitungTotal()
     {
-        $hargaBarang = $this->produk->harga * $this->qty;
+        $this->error_message = '';
+        $hargaBarangTotal = $this->produk->harga * $this->qty;
+        $this->harga_jasa_produk = $this->produk->harga_jasa * $this->qty;
+
+        // 1. LOGIC LAYANAN & TRANSPORT
+        if ($this->layanan == 'bengkel') {
+            // Kalau di bengkel, kena biaya jasa pasang, tapi transport 0
+            $this->biaya_transport = 0;
+            $this->biaya_layanan_total = $this->harga_jasa_produk;
         
-        if ($this->butuh_pemasangan) {
-            $this->biaya_pasang = max(50000, $this->produk->harga * 0.1); 
-        } else {
-            $this->biaya_pasang = 0;
+        } elseif ($this->layanan == 'kirim') {
+            // Kalau kirim, biaya layanan 0 dulu (Ongkir dihitung Admin manual nanti)
+            $this->biaya_transport = 0;
+            $this->biaya_layanan_total = 0;
+        
+        } elseif ($this->layanan == 'home_service') {
+            // Logic Home Service Berdasarkan Kota
+            $alamat = Alamat::find($this->alamat_id);
+            
+            if (!$alamat) {
+                $this->biaya_transport = 0;
+                $this->error_message = 'Silakan pilih alamat terlebih dahulu.';
+            } else {
+                $kota = strtolower($alamat->kota);
+                
+                // Tarif Zona (Sesuai Request)
+                if (Str::contains($kota, 'bekasi')) {
+                    $this->biaya_transport = 50000;
+                } elseif (Str::contains($kota, 'jakarta')) {
+                    $this->biaya_transport = 100000;
+                } elseif (Str::contains($kota, ['cikarang', 'depok', 'tangerang', 'bogor'])) {
+                    $this->biaya_transport = 150000;
+                } else {
+                    $this->biaya_transport = 0;
+                    $this->error_message = "Maaf, Home Service belum tersedia untuk area $alamat->kota. Pilih 'Bengkel' atau 'Kirim'.";
+                }
+
+                // Kalau area valid, total = Jasa Pasang + Transport
+                if ($this->error_message == '') {
+                    $this->biaya_layanan_total = $this->harga_jasa_produk + $this->biaya_transport;
+                } else {
+                    $this->biaya_layanan_total = 0; // Reset kalau error
+                }
+            }
         }
 
-        $this->grand_total = $hargaBarang + $this->biaya_pasang;
+        // 2. HITUNG GRAND TOTAL (Nilai Proyek)
+        $this->grand_total = $hargaBarangTotal + $this->biaya_layanan_total;
+
+        // 3. LOGIC PEMBAYARAN (DP vs LUNAS)
+        if ($this->tipe_pembayaran == 'dp') {
+            // DP 50% dari Grand Total saat ini
+            $this->nominal_yang_harus_dibayar = $this->grand_total * 0.5;
+        } else {
+            $this->nominal_yang_harus_dibayar = $this->grand_total;
+        }
     }
 
     public function buatPesanan()
     {
         $this->validate([
-            'nama_penerima' => 'required',
-            'no_hp' => 'required',
-            'alamat_lengkap' => 'required|min:10',
+            'alamat_id' => 'required|exists:alamat,id',
         ]);
 
-        // 1. Buat Nomor Order Unik
-        $nomorOrder = 'INV-' . date('Ymd') . '-' . rand(1000, 9999);
+        if ($this->error_message) {
+            return; // Jangan lanjut kalau ada error area
+        }
 
-        // 2. Simpan Data Pesanan (Status Awal: menunggu_pembayaran)
+        // Ambil Data Alamat untuk Snapshot
+        $alamat = Alamat::find($this->alamat_id);
+        
+        // Buat Nomor Order
+        $nomorOrder = 'INV-' . date('ymd') . rand(100, 999);
+
+        // Hitung Keuangan Final
+        $jumlahDP = 0;
+        $sisaTagihan = 0;
+
+        if ($this->tipe_pembayaran == 'dp') {
+            $jumlahDP = $this->grand_total * 0.5;
+            $sisaTagihan = $this->grand_total - $jumlahDP;
+        } else {
+            // Kalau lunas, DP dianggap 0, tapi sisa tagihan 0
+            $jumlahDP = 0; 
+            $sisaTagihan = 0;
+        }
+
+        // Simpan ke Pesanan
         $pesanan = Pesanan::create([
             'nomor_order' => $nomorOrder,
             'user_id' => Auth::id(),
-            'snap_nama_penerima' => $this->nama_penerima,
-            'snap_no_hp' => $this->no_hp,
-            'snap_alamat_lengkap' => $this->alamat_lengkap,
-            'status' => 'menunggu_pembayaran', // <--- Status kita ubah jadi ini
+            'snap_nama_penerima' => $alamat->nama_penerima,
+            'snap_no_hp' => $alamat->no_hp_penerima,
+            'snap_alamat_lengkap' => $alamat->alamat_lengkap . ', ' . $alamat->kota,
+            
+            'jenis_pembayaran' => $this->tipe_pembayaran,
+            'status' => 'menunggu_pembayaran',
+            
             'total_belanja' => $this->produk->harga * $this->qty,
-            'biaya_layanan' => $this->biaya_pasang,
+            'biaya_layanan' => $this->biaya_layanan_total,
             'grand_total' => $this->grand_total,
-            'sisa_tagihan' => $this->grand_total,
-            'butuh_pemasangan' => $this->butuh_pemasangan,
+            
+            'jumlah_dp' => $jumlahDP,
+            'sisa_tagihan' => $sisaTagihan,
+            
+            'butuh_pemasangan' => ($this->layanan != 'kirim'), // Kalau kirim, berarti gak dipasangin
         ]);
 
-        DetailPesanan::create([
+        // Simpan Detail Item (Tabel t_pesanan_produk)
+        // Note: Pastikan kamu punya model 'TPesananProduk' atau sesuaikan nama modelnya
+        // Disini saya pakai raw DB insert atau model yang kamu punya. 
+        // Asumsi modelnya 'DetailPesanan' mapping ke 't_pesanan_produk'
+        \App\Models\DetailPesanan::create([ 
             'pesanan_id' => $pesanan->id,
             'produk_id' => $this->produk->id,
             'jumlah' => $this->qty,
@@ -90,66 +181,49 @@ class Checkout extends Component
             'subtotal' => $this->produk->harga * $this->qty,
         ]);
 
-        // ==========================================
-        // INTEGRASI MIDTRANS DIMULAI DI SINI
-        // ==========================================
-        
-        // 3. Set Konfigurasi Midtrans
+        // --- MIDTRANS ---
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
 
-        // 4. Siapkan Parameter untuk dikirim ke Midtrans
         $params = [
             'transaction_details' => [
                 'order_id' => $nomorOrder,
-                'gross_amount' => (int) $this->grand_total, // Harus Integer
+                'gross_amount' => (int) $this->nominal_yang_harus_dibayar, 
             ],
             'customer_details' => [
-                'first_name' => $this->nama_penerima,
+                'first_name' => Auth::user()->name,
                 'email' => Auth::user()->email,
-                'phone' => $this->no_hp,
+                'phone' => Auth::user()->no_hp,
             ],
             'item_details' => [
                 [
-                    'id' => $this->produk->id,
-                    'price' => (int) $this->produk->harga,
-                    'quantity' => $this->qty,
-                    'name' => substr($this->produk->nama_produk, 0, 50), // Nama max 50 char
-                ],
-                // Tambahkan item Jasa Pasang jika ada
+                    'id' => 'TAGIHAN-'. $nomorOrder,
+                    'price' => (int) $this->nominal_yang_harus_dibayar,
+                    'quantity' => 1,
+                    'name' => 'Pembayaran ' . strtoupper($this->tipe_pembayaran) . ' Order',
+                ]
             ]
         ];
 
-        // Hack kecil: Kalau ada biaya pasang, masukkan sebagai item tambahan
-        if($this->biaya_pasang > 0){
-            $params['item_details'][] = [
-                'id' => 'JASA-PASANG',
-                'price' => (int) $this->biaya_pasang,
-                'quantity' => 1,
-                'name' => 'Jasa Pemasangan & Instalasi'
-            ];
-        }
-
         try {
-            // 5. Minta Snap Token dari Midtrans
             $snapToken = Snap::getSnapToken($params);
-
-            // 6. Simpan Token ke Database
+            
             $pesanan->snap_token = $snapToken;
             $pesanan->save();
 
-            // 7. Redirect ke Halaman Pembayaran (Payment Page)
             return redirect()->route('payment', $pesanan->id);
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
+            session()->flash('error', $e->getMessage());
         }
     }
 
     public function render()
     {
-        return view('livewire.checkout');
+        return view('livewire.checkout', [
+            'daftarAlamat' => Alamat::where('user_id', Auth::id())->get()
+        ]);
     }
 }

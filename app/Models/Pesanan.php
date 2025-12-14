@@ -18,6 +18,13 @@ class Pesanan extends Model
         'snap_no_hp',
         'snap_alamat_lengkap',
         'status',
+        
+        // --- TAMBAHAN BARU ---
+        'jenis_pembayaran', // <--- PENTING: User pilih DP/Full
+        'jumlah_dp',        // <--- PENTING: Nilai 50%
+        'snap_token',       // <--- PENTING: Buat popup Midtrans
+        // ---------------------
+
         'total_belanja',
         'biaya_layanan',
         'grand_total',

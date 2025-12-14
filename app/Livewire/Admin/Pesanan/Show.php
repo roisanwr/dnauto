@@ -3,8 +3,8 @@
 namespace App\Livewire\Admin\Pesanan;
 
 use App\Models\Pesanan;
-use App\Models\Pegawai; // <--- Import Pegawai
-use App\Models\Schedule; // <--- Import Schedule
+use App\Models\Pegawai;
+use App\Models\Schedule;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -12,65 +12,92 @@ use Livewire\Attributes\Layout;
 class Show extends Component
 {
     public $pesanan;
-    public $statusBaru;
+    public $activeTab = 'info'; // info, bayar, proses
+
+    // Form Input Ongkir (Khusus Kirim)
+    public $ongkir_real = 0;
+    public $no_resi;
     
-    // Variabel untuk Jadwal
+    // Form Input Jadwal (Khusus Jasa)
     public $pegawai_id;
     public $tgl_pengerjaan;
     public $jam_mulai;
-    public $status_schedule = 'terjadwal';
+    public $status_manual;
 
     public function mount($id)
     {
-        // Load pesanan dengan relasi Schedule juga
-        $this->pesanan = Pesanan::with(['detailPesanan.produk', 'user', 'schedule'])->findOrFail($id);
+        $this->pesanan = Pesanan::with(['detailPesanan.produk', 'pembayaran', 'schedule.pegawai', 'user'])->findOrFail($id);
         
-        $this->statusBaru = $this->pesanan->status;
-
-        // Jika sudah pernah dijadwalkan, isi form dengan data lama
+        // Load data existing kalau ada
         if ($this->pesanan->schedule) {
             $this->pegawai_id = $this->pesanan->schedule->pegawai_id;
             $this->tgl_pengerjaan = $this->pesanan->schedule->tgl_pengerjaan;
             $this->jam_mulai = $this->pesanan->schedule->jam_mulai;
-            $this->status_schedule = $this->pesanan->schedule->status;
         }
     }
 
-    public function updateStatus()
+// --- ACTION 1: UPDATE ONGKIR (Barang Siap Kirim) ---
+    public function simpanOngkir()
     {
-        $this->pesanan->update(['status' => $this->statusBaru]);
-        session()->flash('success', 'Status pesanan berhasil diperbarui!');
-    }
-
-    // --- FUNGSI BARU: SIMPAN JADWAL ---
-    public function simpanJadwal()
-    {
-        // Validasi input
         $this->validate([
-            'pegawai_id' => 'required',
-            'tgl_pengerjaan' => 'required|date',
-            'jam_mulai' => 'required',
+            'ongkir_real' => 'required|numeric|min:0',
         ]);
 
-        // Simpan atau Update Jadwal (Pakai updateOrCreate)
-        Schedule::updateOrCreate(
-            ['pesanan_id' => $this->pesanan->id], // Kunci pencarian
-            [
-                'pegawai_id' => $this->pegawai_id,
-                'tgl_pengerjaan' => $this->tgl_pengerjaan,
-                'jam_mulai' => $this->jam_mulai,
-                'status' => $this->status_schedule
-            ]
-        );
+        // ... logic hitung sisa tagihan sama ...
+        // ... bedanya cuma di status ...
 
-        session()->flash('success_jadwal', 'Jadwal teknisi berhasil diatur!');
+        $this->pesanan->update([
+            'biaya_layanan' => $this->pesanan->biaya_layanan + $this->ongkir_real,
+            'grand_total' => $newGrandTotal,
+            'sisa_tagihan' => $sisaBaru,
+            
+            // Logic: Ongkir diinput = Barang Jadi = Minta Duit
+            'status' => 'menunggu_pelunasan' 
+        ]);
+
+        session()->flash('message', 'Ongkir diupdate. User diminta melunasi tagihan.');
     }
 
+    // --- ACTION 2: ASSIGN TEKNISI (Order Jasa) ---
+    public function assignTeknisi()
+    {
+        // ... validasi sama ...
+        
+        // ... logic schedule sama ...
+
+        // PERUBAHAN STATUS DISINI
+        if ($this->pesanan->sisa_tagihan > 0) {
+            // Kalau masih ada sisa tagihan (DP), minta pelunasan
+            $this->pesanan->update(['status' => 'menunggu_pelunasan']);
+            session()->flash('message', 'Jadwal dibuat. Menunggu pelunasan user.');
+        } else {
+            // Kalau sudah lunas (Full Payment), berarti SIAP DIPASANG
+            $this->pesanan->update(['status' => 'siap_dipasang']); 
+            session()->flash('message', 'Jadwal dibuat. Barang siap dipasang.');
+        }
+    }
+    
+    // --- ACTION 3: SELESAIKAN ORDER ---
+    public function tandaiSelesai()
+    {
+        // ... logic sama ...
+    }
+
+    // --- ACTION 4: MANUAL STATUS (Update Listnya) ---
+    public function updateStatusManual()
+    {
+        // Update daftar status yang boleh dipilih manual
+        $this->validate([
+            'status_manual' => 'required|in:menunggu_pembayaran,menunggu_verifikasi,produksi,siap_dipasang,siap_dikirim,menunggu_pelunasan,lunas,selesai,batal'
+        ]);
+
+        $this->pesanan->update(['status' => $this->status_manual]);
+        // ...
+    }
     public function render()
     {
-        // Ambil data semua pegawai untuk dropdown
         return view('livewire.admin.pesanan.show', [
-            'list_pegawai' => Pegawai::all()
+            'pegawais' => Pegawai::where('status_ketersediaan', 'available')->get()
         ]);
     }
 }

@@ -2,19 +2,39 @@
 
 namespace App\Livewire;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
-use Livewire\WithFileUploads; // Wajib buat upload
+use Illuminate\Support\Facades\Auth;
+use App\Models\Alamat;
+use App\Models\User;
 
 class Profile extends Component
 {
-    use WithFileUploads;
+    // --- DATA USER ---
+    public $name;
+    public $email;
+    public $no_hp;
 
-    public $name, $email, $no_hp;
-    public $photo; // Buat file upload sementara
-    public $new_password; // Buat set/ganti password
+    // --- DATA FORM ALAMAT ---
+    public $showAlamatForm = false; // Toggle untuk buka/tutup form
+    public $label_alamat;
+    public $nama_penerima;
+    public $no_hp_penerima;
+    public $alamat_lengkap;
+    
+    // Logic Kota
+    public $kota;          // Pilihan dari dropdown
+    public $kota_manual;   // Inputan manual jika pilih "Lainnya"
+    
+    public $is_primary = false;
+
+    // Daftar Kota untuk Dropdown (Sinkron dengan Checkout)
+    public $pilihanKota = [
+        'Jakarta Pusat', 'Jakarta Utara', 'Jakarta Barat', 'Jakarta Selatan', 'Jakarta Timur',
+        'Kota Bekasi', 'Kabupaten Bekasi', 'Cikarang',
+        'Kota Depok', 'Kota Bogor', 'Kabupaten Bogor',
+        'Kota Tangerang', 'Tangerang Selatan', 'Kabupaten Tangerang',
+        'Lainnya (Luar Jabodetabek)'
+    ];
 
     public function mount()
     {
@@ -24,43 +44,132 @@ class Profile extends Component
         $this->no_hp = $user->no_hp;
     }
 
+    // ==================================================
+    // 1. UPDATE DATA DIRI (Nama & HP)
+    // ==================================================
     public function updateProfile()
     {
         $this->validate([
-            'name' => 'required|min:3',
-            'photo' => 'nullable|image|max:2048', // Max 2MB
+            'name' => 'required|string|max:255',
+            'no_hp' => 'required|numeric',
         ]);
 
-        $user = Auth::user();
-        $data = ['name' => $this->name, 'no_hp' => $this->no_hp];
+        $user = User::find(Auth::id());
+        $user->update([
+            'name' => $this->name,
+            'no_hp' => $this->no_hp,
+        ]);
 
-        // Logika Ganti Avatar
-        if ($this->photo) {
-            // Hapus foto lama jika bukan dari Google (disimpan di storage)
-            if ($user->avatar && str_contains($user->avatar, 'storage')) {
-                // Logic hapus file lama bisa ditambah disini
-            }
+        session()->flash('message', 'Profil berhasil diperbarui.');
+    }
+
+    // ==================================================
+    // 2. MANAJEMEN ALAMAT
+    // ==================================================
+
+    public function toggleForm()
+    {
+        $this->showAlamatForm = !$this->showAlamatForm;
+        $this->resetFormAlamat();
+    }
+
+    public function resetFormAlamat()
+    {
+        $this->label_alamat = '';
+        $this->nama_penerima = Auth::user()->name; // Default nama sendiri
+        $this->no_hp_penerima = Auth::user()->no_hp;
+        $this->alamat_lengkap = '';
+        $this->kota = '';
+        $this->kota_manual = '';
+        $this->is_primary = false;
+    }
+
+    public function simpanAlamat()
+    {
+        // Validasi Dasar
+        $this->validate([
+            'label_alamat' => 'required',
+            'nama_penerima' => 'required',
+            'no_hp_penerima' => 'required',
+            'alamat_lengkap' => 'required',
+            'kota' => 'required',
+        ]);
+
+        // Logic Penentuan Kota Final
+        $kotaFinal = $this->kota;
+
+        // Jika user pilih "Lainnya", wajib isi manual
+        if ($this->kota == 'Lainnya (Luar Jabodetabek)') {
+            $this->validate([
+                'kota_manual' => 'required|string|min:3'
+            ], [
+                'kota_manual.required' => 'Silakan tulis nama Kota/Kabupaten tujuan.'
+            ]);
             
-            // Simpan foto baru ke folder public/avatars
-            $path = $this->photo->store('avatars', 'public');
-            $data['avatar'] = '/storage/' . $path;
+            // Override nilai kota dengan inputan manual user
+            $kotaFinal = $this->kota_manual;
         }
 
-        // Logika Set Password
-        if (!empty($this->new_password)) {
-            $this->validate(['new_password' => 'min:8']);
-            $data['password'] = Hash::make($this->new_password);
+        // Cek apakah ini alamat pertama? Jika ya, otomatis Primary
+        $count = Alamat::where('user_id', Auth::id())->count();
+        if ($count == 0) {
+            $this->is_primary = true;
         }
 
-        $user->update($data);
+        // Kalau user centang Primary, yang lain harus jadi False
+        if ($this->is_primary) {
+            Alamat::where('user_id', Auth::id())->update(['is_primary' => false]);
+        }
+
+        // Simpan ke Database
+        Alamat::create([
+            'user_id' => Auth::id(),
+            'label_alamat' => $this->label_alamat,
+            'nama_penerima' => $this->nama_penerima,
+            'no_hp_penerima' => $this->no_hp_penerima,
+            'alamat_lengkap' => $this->alamat_lengkap,
+            'kota' => $kotaFinal, // Simpan hasil final
+            'is_primary' => $this->is_primary
+        ]);
+
+        session()->flash('alamat_message', 'Alamat baru berhasil disimpan.');
+        $this->toggleForm(); // Tutup form
+    }
+
+    public function hapusAlamat($id)
+    {
+        $alamat = Alamat::where('user_id', Auth::id())->where('id', $id)->first();
+        if ($alamat) {
+            $wasPrimary = $alamat->is_primary;
+            $alamat->delete();
+            
+            // Kalau yang dihapus adalah alamat utama, oper status utama ke alamat lain (jika ada)
+            if ($wasPrimary) {
+                $next = Alamat::where('user_id', Auth::id())->first();
+                if ($next) {
+                    $next->update(['is_primary' => true]);
+                }
+            }
+        }
+    }
+
+    public function setUtama($id)
+    {
+        // Reset semua alamat user ini jadi bukan utama
+        Alamat::where('user_id', Auth::id())->update(['is_primary' => false]);
         
-        // Refresh halaman biar foto nampil
-        $this->redirect('/profile', navigate: true);
-        session()->flash('message', 'Profil berhasil diperbarui!');
+        // Set alamat yang dipilih jadi utama
+        Alamat::where('user_id', Auth::id())->where('id', $id)->update(['is_primary' => true]);
     }
 
     public function render()
     {
-        return view('livewire.profile')->title('Kelola Profil');
+        return view('livewire.profile', [
+            // Urutkan biar yang Utama selalu paling atas
+            'daftarAlamat' => Alamat::where('user_id', Auth::id())
+                                    ->orderBy('is_primary', 'desc')
+                                    ->latest()
+                                    ->get()
+        ]);
     }
 }
