@@ -45,10 +45,12 @@
                 Operasional Bengkel
             </div>
 
-            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
-                <i data-lucide="inbox" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
+            <a href="{{ route('admin.pesanan') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-colors group {{ request()->routeIs('admin.pesanan') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
+                <i data-lucide="inbox" class="w-4 h-4 {{ request()->routeIs('admin.pesanan') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600' }}"></i>
                 Booking Masuk
-                <span class="ml-auto bg-orange-100 text-orange-600 py-0.5 px-2 rounded-full text-xs font-bold">3</span>
+                
+                {{-- Indikator Jumlah Pesanan Baru (Opsional, nanti kita bikin dinamis) --}}
+                {{-- <span class="ml-auto bg-orange-100 text-orange-600 py-0.5 px-2 rounded-full text-xs font-bold">3</span> --}}
             </a>
 
             <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
