@@ -11,35 +11,56 @@ class History extends Component
 {
     use WithPagination;
 
-    public $filterStatus = 'semua'; // Filter tab: semua, belum_bayar, proses, selesai
+    public $filterStatus = 'semua';
 
     public function setFilter($status)
     {
         $this->filterStatus = $status;
-        $this->resetPage(); // Reset pagination kalau ganti filter
+        $this->resetPage();
+    }
+
+    // --- FITUR: BATALKAN PESANAN (BEBAS) ---
+    public function batalkanPesanan($id)
+    {
+        $pesanan = Pesanan::where('user_id', Auth::id())->where('id', $id)->first();
+
+        if (!$pesanan) {
+            session()->flash('error', 'Pesanan tidak ditemukan.');
+            return;
+        }
+
+        // ATURAN BARU: Boleh batal KECUALI sudah 'selesai' atau memang sudah 'batal'
+        if ($pesanan->status !== 'selesai' && $pesanan->status !== 'batal') {
+            
+            $pesanan->update([
+                'status' => 'batal'
+            ]);
+
+            // Hapus jadwal teknisi jika ada, biar teknisi gak kecele
+            if ($pesanan->schedule) {
+                $pesanan->schedule->delete(); 
+            }
+
+            session()->flash('message', 'Pesanan berhasil dibatalkan.');
+        } else {
+            session()->flash('error', 'Pesanan yang sudah selesai tidak dapat dibatalkan.');
+        }
     }
 
     public function render()
     {
         $user = Auth::user();
 
-        // Query Dasar
-        $query = Pesanan::with(['detailPesanan.produk']) // Eager load produk
+        $query = Pesanan::with(['detailPesanan.produk'])
                 ->where('user_id', $user->id)
-                ->latest(); // Urutkan terbaru
+                ->latest();
 
-        // Logic Filter Tab
         if ($this->filterStatus == 'belum_bayar') {
-            // Termasuk yang menunggu DP atau Menunggu Pelunasan
             $query->whereIn('status', ['menunggu_pembayaran', 'menunggu_pelunasan']);
-        
         } elseif ($this->filterStatus == 'proses') {
-            // Sedang produksi atau siap dieksekusi
-            $query->whereIn('status', ['produksi', 'siap_dipasang', 'siap_dikirim', 'diproses']);
-        
+            $query->whereIn('status', ['produksi', 'siap_dipasang', 'siap_dikirim', 'diproses', 'dikirim']); // Tambah 'dikirim' disini
         } elseif ($this->filterStatus == 'selesai') {
-            $query->whereIn('status', ['lunas', 'selesai', 'dikirim']);
-        
+            $query->whereIn('status', ['lunas', 'selesai']); // Lunas masuk sini kalau mau rapi, atau masuk proses
         } elseif ($this->filterStatus == 'batal') {
             $query->where('status', 'batal');
         }

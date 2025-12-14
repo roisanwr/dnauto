@@ -115,41 +115,45 @@
                                     </div>
                                 </div>
 
+
                                 {{-- ACTION BUTTONS --}}
                                 <div class="space-y-2">
                                     
-                                    {{-- 1. Tombol Bayar (Awal / Pelunasan) --}}
+                                    {{-- 1. Tombol Bayar (Muncul jika ada tagihan) --}}
                                     @if($order->sisa_tagihan > 0 && ($order->status == 'menunggu_pembayaran' || $order->status == 'menunggu_pelunasan'))
                                         <a href="{{ route('payment', $order->id) }}" class="block w-full text-center bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition">
                                             {{ $order->status == 'menunggu_pelunasan' ? 'Lunasi Sekarang' : 'Bayar Sekarang' }}
                                         </a>
-                                    
-                                    {{-- 2. Info Produksi --}}
-                                    @elseif($order->status == 'produksi')
-                                        <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-xs text-center border border-blue-100">
-                                            Pesanan sedang dikerjakan. Kami akan kabari jika sudah siap.
-                                        </div>
+                                    @endif
 
-                                    {{-- 3. Info Siap (Jasa) --}}
+                                    {{-- 2. Info Status --}}
+                                    @if($order->status == 'produksi')
+                                        <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-xs text-center border border-blue-100 mb-2">
+                                            Sedang Dikerjakan
+                                        </div>
                                     @elseif($order->status == 'siap_dipasang')
-                                        <div class="bg-purple-50 text-purple-700 px-4 py-2 rounded-lg text-xs border border-purple-100">
-                                            <strong>Jadwal Terkonfirmasi!</strong><br>
-                                            Teknisi akan datang/siap di bengkel sesuai jadwal.
-                                            <div class="mt-1 font-mono text-sm">
-                                                {{ $order->schedule ? \Carbon\Carbon::parse($order->schedule->tgl_pengerjaan)->format('d M Y') : '-' }} 
-                                                ({{ $order->schedule->jam_mulai ?? '-' }})
-                                            </div>
+                                        <div class="bg-purple-50 text-purple-700 px-4 py-2 rounded-lg text-xs text-center border border-purple-100 mb-2">
+                                            Jadwal Terkonfirmasi
                                         </div>
+                                    @endif
 
-                                    {{-- 4. Info Resi (Kirim) --}}
-                                    @elseif(($order->status == 'dikirim' || $order->status == 'selesai') && !$order->butuh_pemasangan)
-                                        <div class="bg-green-50 text-green-700 px-4 py-2 rounded-lg text-xs text-center border border-green-100">
-                                            @if($order->no_resi)
-                                                No Resi: <span class="font-bold font-mono select-all">{{ $order->no_resi }}</span>
-                                            @else
-                                                Paket sedang dalam pengiriman.
-                                            @endif
-                                        </div>
+                                    {{-- 3. TOMBOL BATAL (BEBAS TAPI BERISIKO) --}}
+                                    {{-- Muncul selama status BUKAN 'selesai', 'batal', atau 'dikirim' (opsional, dikirim mau dibatalin ribet returnya) --}}
+                                    @if($order->status !== 'selesai' && $order->status !== 'batal')
+                                        
+                                        @php
+                                            $confirmMessage = "Yakin ingin membatalkan pesanan ini?";
+                                            // Kalau uang sudah masuk (status produksi/siap), kasih warning lebih keras
+                                            if(in_array($order->status, ['produksi', 'siap_dipasang', 'siap_dikirim', 'menunggu_pelunasan'])) {
+                                                $confirmMessage = "PERINGATAN: Pesanan sudah berjalan. Pembatalan mungkin menyebabkan Uang DP/Pembayaran HANGUS. Yakin tetap batalkan?";
+                                            }
+                                        @endphp
+
+                                        <button wire:click="batalkanPesanan({{ $order->id }})" 
+                                                wire:confirm="{{ $confirmMessage }}"
+                                                class="block w-full text-center bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium py-2 px-4 rounded-lg text-sm transition mt-2">
+                                            Batalkan Pesanan
+                                        </button>
                                     @endif
 
                                 </div>
