@@ -119,10 +119,37 @@ class Checkout extends Component
         }
     }
 
+    // --- LOGIC QUANTITY (TOMBOL TAMBAH/KURANG) ---
+    public function tambahQty()
+    {
+        $this->qty++;
+        $this->hitungTotal(); // Hitung ulang total harga
+    }
+
+    public function kurangQty()
+    {
+        if ($this->qty > 1) {
+            $this->qty--;
+            $this->hitungTotal(); // Hitung ulang total harga
+        }
+    }
+
+    // Update method updated() agar input manual juga ke-detect
+    public function updatedQty()
+    {
+        // Pastikan tidak minus atau kosong
+        if ($this->qty < 1 || $this->qty == '') {
+            $this->qty = 1;
+        }
+        $this->hitungTotal();
+    }
+
     public function buatPesanan()
     {
+        // TAMBAHKAN VALIDASI QTY DISINI
         $this->validate([
             'alamat_id' => 'required|exists:alamat,id',
+            'qty'       => 'required|integer|min:1', // Wajib minimal 1
         ]);
 
         if ($this->error_message) {

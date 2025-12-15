@@ -20,6 +20,31 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <label class="text-xs font-bold text-gray-500 uppercase mb-1 block">Jumlah Pesanan</label>
+                    
+                    <div class="flex items-center">
+                        <button wire:click="kurangQty" 
+                                class="w-8 h-8 rounded-l border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold flex items-center justify-center transition">
+                            -
+                        </button>
+
+                        <input type="number" 
+                               wire:model.live.debounce.500ms="qty" 
+                               class="w-16 h-8 border-t border-b border-gray-300 text-center text-sm focus:ring-blue-500 focus:border-blue-500"
+                               min="1">
+
+                        <button wire:click="tambahQty" 
+                                class="w-8 h-8 rounded-r border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold flex items-center justify-center transition">
+                            +
+                        </button>
+                    </div>
+                    
+                    <div wire:loading wire:target="tambahQty,kurangQty,qty" class="text-xs text-blue-500 mt-1 font-medium animate-pulse">
+                        Menghitung total...
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Alamat Pengiriman / Pemasangan</h3>
                     
                     @if($daftarAlamat->isEmpty())
