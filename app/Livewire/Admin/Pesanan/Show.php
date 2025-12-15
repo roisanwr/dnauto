@@ -92,7 +92,24 @@ class Show extends Component
             'jam_mulai' => 'required',
         ]);
 
-        // Update atau Create Schedule
+        // 1. CEK BENTROK (DOUBLE BOOKING PREVENTION)
+        // Cek apakah pegawai ini SUDAH punya jadwal di TANGGAL dan JAM yang sama?
+        // Asumsi pengerjaan memakan waktu (misal 2-3 jam), tapi untuk simpelnya kita cek jam mulainya.
+        $bentrok = Schedule::where('pegawai_id', $this->pegawai_id)
+            ->where('tgl_pengerjaan', $this->tgl_pengerjaan)
+            ->where('status', '!=', 'selesai') // Abaikan yang sudah selesai
+            ->where('status', '!=', 'reschedule') // Abaikan yang batal/reschedule
+            // Logic Cek Jam: Jika jam mulai sama persis (Bisa dikembangkan jadi rentang waktu nanti)
+            ->where('jam_mulai', $this->jam_mulai) 
+            ->exists();
+
+        if ($bentrok) {
+            // Lempar error ke user admin
+            $this->addError('pegawai_id', 'Teknisi ini sudah ada jadwal lain di Tanggal & Jam tersebut!');
+            return;
+        }
+
+        // 2. PROSES UPDATE/CREATE JADWAL
         Schedule::updateOrCreate(
             ['pesanan_id' => $this->pesanan->id],
             [
@@ -103,13 +120,16 @@ class Show extends Component
             ]
         );
 
-        // Logic Update Status Pesanan
+        // 3. UPDATE STATUS PEGAWAI (Opsional, tapi bagus buat visual)
+        // Pegawai::find($this->pegawai_id)->update(['status_ketersediaan' => 'busy']); 
+        // Note: Logic 'busy' ini agak tricky kalau jadwalnya minggu depan, jadi mending biarkan 'available' 
+        // tapi difilter lewat query jadwal seperti di bawah.
+
+        // Logic Status Pesanan
         if ($this->pesanan->sisa_tagihan > 0) {
-            // Kalau masih ada sisa tagihan (DP), minta pelunasan
             $this->pesanan->update(['status' => 'menunggu_pelunasan']);
             session()->flash('message', 'Jadwal dibuat. Menunggu pelunasan user.');
         } else {
-            // Kalau sudah lunas (Full Payment), berarti SIAP DIPASANG
             $this->pesanan->update(['status' => 'siap_dipasang']); 
             session()->flash('message', 'Jadwal dibuat. Barang siap dipasang.');
         }
@@ -165,8 +185,23 @@ class Show extends Component
 
     public function render()
     {
+        // LOGIC SMART FILTER PEGAWAI
+        // Kita hanya mau menampilkan pegawai yang:
+        // 1. Status dasarnya 'available' (Gak cuti/sakit)
+        // 2. BELUM punya jadwal di tanggal & jam yang dipilih admin (Kalau admin sudah input tanggal)
+
+        $queryPegawai = Pegawai::where('status_ketersediaan', 'available');
+
+        if ($this->tgl_pengerjaan && $this->jam_mulai) {
+            $queryPegawai->whereDoesntHave('schedule', function($q) {
+                $q->where('tgl_pengerjaan', $this->tgl_pengerjaan)
+                  ->where('jam_mulai', $this->jam_mulai)
+                  ->whereIn('status', ['terjadwal']); // Status aktif
+            });
+        }
+
         return view('livewire.admin.pesanan.show', [
-            'pegawais' => Pegawai::where('status_ketersediaan', 'available')->get()
+            'pegawais' => $queryPegawai->get()
         ]);
     }
 }

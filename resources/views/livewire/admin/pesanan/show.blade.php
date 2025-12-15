@@ -225,11 +225,11 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-xs font-bold uppercase text-gray-500">Tanggal</label>
-                                    <input type="date" wire:model="tgl_pengerjaan" class="w-full mt-1 border-gray-300 rounded p-2 text-sm">
+                                    <input type="date" wire:model.live="tgl_pengerjaan" class="w-full mt-1 border-gray-300 rounded p-2 text-sm">
                                 </div>
                                 <div>
                                     <label class="text-xs font-bold uppercase text-gray-500">Jam Mulai</label>
-                                    <input type="time" wire:model="jam_mulai" class="w-full mt-1 border-gray-300 rounded p-2 text-sm">
+                                    <input type="time" wire:model.live="jam_mulai" class="w-full mt-1 border-gray-300 rounded p-2 text-sm">
                                 </div>
                             </div>
                             @error('tgl_pengerjaan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror

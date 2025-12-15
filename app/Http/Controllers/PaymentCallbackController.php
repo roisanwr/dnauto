@@ -7,12 +7,13 @@ use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Notification;
-use Illuminate\Support\Str; // Jangan lupa import ini
+use Illuminate\Support\Str;
 
 class PaymentCallbackController extends Controller
 {
     public function receive()
     {
+        // 1. Setup Konfigurasi
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
@@ -21,20 +22,31 @@ class PaymentCallbackController extends Controller
         try {
             $notif = new Notification();
 
+            // ==========================================
+            // SECURITY CHECK: VALIDASI SIGNATURE KEY
+            // ==========================================
+            // Rumus Midtrans: SHA512(order_id + status_code + gross_amount + ServerKey)
+            $localSignature = hash('sha512', $notif->order_id . $notif->status_code . $notif->gross_amount . Config::$serverKey);
+
+            if ($localSignature !== $notif->signature_key) {
+                // Jika tidak cocok, tolak request! Ini pasti request palsu.
+                return response()->json(['message' => 'Invalid Signature'], 403);
+            }
+            // ==========================================
+
             $transaction = $notif->transaction_status;
             $type = $notif->payment_type;
-            $midtransOrderId = $notif->order_id; // Contoh: INV-123-PL-173849
+            $midtransOrderId = $notif->order_id; 
             $fraud = $notif->fraud_status;
 
-            // --- 1. BERSIHKAN ORDER ID ---
-            // Kita harus buang embel-embel "-PL-..." biar ketemu di database
+            // --- BERSIHKAN ORDER ID ---
             $realOrderId = $midtransOrderId;
             if (Str::contains($midtransOrderId, '-PL-')) {
                 $parts = explode('-PL-', $midtransOrderId);
-                $realOrderId = $parts[0]; // Ambil "INV-123" nya saja
+                $realOrderId = $parts[0]; 
             }
 
-            // --- 2. CARI PESANAN ---
+            // --- CARI PESANAN ---
             $pesanan = Pesanan::where('nomor_order', $realOrderId)->lockForUpdate()->first();
 
             if (!$pesanan) {
@@ -53,15 +65,13 @@ class PaymentCallbackController extends Controller
                 $midtransStatus = 'failed';
             }
 
-            // --- 3. UPDATE STATUS DN AUTO ---
+            // --- UPDATE STATUS DN AUTO ---
             if ($midtransStatus == 'success') {
                 
                 // LOGIC PELUNASAN
-                // Cek apakah ID dari Midtrans mengandung "-PL-" ATAU status memang menunggu pelunasan
                 if (Str::contains($midtransOrderId, '-PL-') || $pesanan->status == 'menunggu_pelunasan') {
                     
-                    // Update jadi LUNAS (atau siap_dipasang/dikirim)
-                    $pesanan->sisa_tagihan = 0; // Pastikan 0
+                    $pesanan->sisa_tagihan = 0; 
                     
                     if ($pesanan->butuh_pemasangan) {
                         $pesanan->status = 'siap_dipasang';
@@ -70,7 +80,6 @@ class PaymentCallbackController extends Controller
                     }
                     $pesanan->save();
 
-                    // Catat Log Pembayaran
                     Pembayaran::create([
                         'pesanan_id' => $pesanan->id,
                         'tipe' => 'pelunasan',
@@ -83,9 +92,8 @@ class PaymentCallbackController extends Controller
                 // LOGIC PEMBAYARAN AWAL (DP/FULL)
                 elseif ($pesanan->status == 'menunggu_pembayaran') {
                     
-                    $pesanan->status = 'produksi'; // Masuk produksi
+                    $pesanan->status = 'produksi'; 
                     
-                    // Kalau full payment, sisa tagihan 0
                     if($pesanan->jenis_pembayaran == 'lunas'){
                         $pesanan->sisa_tagihan = 0;
                     }
