@@ -13,21 +13,28 @@ class Dashboard extends Component
 {
     public function render()
     {
+        // STATUS BARU: produksi, menunggu_pelunasan, siap_dipasang, siap_dikirim, selesai
+        
         return view('livewire.admin.dashboard', [
-            // 1. Hitung Total Uang (Hanya yang statusnya 'lunas' atau 'selesai')
-            'total_pendapatan' => Pesanan::whereIn('status', ['lunas', 'selesai', 'sedang_dikerjakan'])->sum('grand_total'),
+            // 1. Hitung Estimasi Omzet (Semua order valid yang tidak batal/belum bayar)
+            'total_pendapatan' => Pesanan::whereNotIn('status', ['menunggu_pembayaran', 'menunggu_verifikasi', 'batal'])
+                                        ->sum('grand_total'),
 
-            // 2. Hitung Jumlah Pesanan Baru (Perlu diproses)
-            'pesanan_baru' => Pesanan::where('status', 'menunggu_pembayaran')->orWhere('status', 'lunas')->count(),
+            // 2. Hitung Order Aktif (Yang perlu perhatian admin/teknisi)
+            'pesanan_baru' => Pesanan::whereIn('status', [
+                                    'produksi', 
+                                    'menunggu_pelunasan', 
+                                    'siap_dipasang', 
+                                    'siap_dikirim'
+                                ])->count(),
 
             // 3. Hitung Total Customer
-            // Ganti 'usertype' jadi 'role', dan 'user' jadi 'customer'
             'total_user' => User::where('role', 'customer')->count(),
 
             // 4. Hitung Total Produk
             'total_produk' => Produk::count(),
 
-            // 5. Ambil 5 Pesanan Terakhir buat tabel mini
+            // 5. Ambil 5 Pesanan Terakhir
             'pesanan_terbaru' => Pesanan::with('user')->latest()->take(5)->get()
         ]);
     }

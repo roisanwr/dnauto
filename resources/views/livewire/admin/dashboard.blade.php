@@ -84,16 +84,32 @@
                             </td>
                             <td class="px-6 py-3">
                                 @php
+                                    // LOGIC WARNA STATUS BARU
                                     $color = match($order->status) {
-                                        'lunas' => 'text-green-600 bg-green-50 border-green-200',
-                                        'menunggu_pembayaran' => 'text-yellow-600 bg-yellow-50 border-yellow-200',
-                                        'sedang_dikerjakan' => 'text-blue-600 bg-blue-50 border-blue-200',
-                                        'selesai' => 'text-gray-600 bg-gray-50 border-gray-200',
-                                        default => 'text-red-600 bg-red-50 border-red-200'
+                                        // Hijau: Selesai/Sukses
+                                        'selesai', 'lunas' => 'text-green-600 bg-green-50 border-green-200',
+                                        
+                                        // Biru: Sedang Proses Produksi
+                                        'produksi' => 'text-blue-600 bg-blue-50 border-blue-200',
+                                        
+                                        // Ungu: Siap Eksekusi
+                                        'siap_dipasang', 'siap_dikirim' => 'text-purple-600 bg-purple-50 border-purple-200',
+                                        
+                                        // Orange/Kuning: Menunggu User (Bayar/Lunasin)
+                                        'menunggu_pembayaran', 'menunggu_pelunasan' => 'text-orange-600 bg-orange-50 border-orange-200',
+                                        
+                                        // Merah: Batal
+                                        'batal' => 'text-red-600 bg-red-50 border-red-200',
+                                        
+                                        // Default
+                                        default => 'text-gray-600 bg-gray-50 border-gray-200'
                                     };
+                                    
+                                    // Format Teks (Hapus underscore)
+                                    $statusLabel = ucwords(str_replace('_', ' ', $order->status));
                                 @endphp
                                 <span class="px-2 py-1 rounded text-xs font-bold border {{ $color }}">
-                                    {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                    {{ $statusLabel }}
                                 </span>
                             </td>
                         </tr>

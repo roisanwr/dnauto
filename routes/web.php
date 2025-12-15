@@ -20,6 +20,7 @@ use App\Livewire\Payment;
 use App\Livewire\History;
 use App\Livewire\Admin\Pesanan\Index as PesananIndex;
 use App\Livewire\Admin\Pesanan\Show as PesananShow;
+use App\Http\Controllers\Admin\InvoiceController;
 
 
 // 1. Halaman Utama (Home)
@@ -83,5 +84,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
 
     // Route Pesanan
     Route::get('/pesanan', PesananIndex::class)->name('admin.pesanan');
+
+
+    // Route Cetak Invoice
+    Route::get('/pesanan/{id}/invoice', [InvoiceController::class, 'print'])->name('admin.pesanan.invoice');
 
 }); 
