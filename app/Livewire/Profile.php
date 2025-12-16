@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Alamat;
 use App\Models\User;
 
@@ -13,6 +14,9 @@ class Profile extends Component
     public $name;
     public $email;
     public $no_hp;
+    // --- CHANGE PASSWORD ---
+    public $new_password;
+    public $new_password_confirmation;
 
     // --- DATA FORM ALAMAT ---
     public $showAlamatForm = false; // Toggle untuk buka/tutup form
@@ -52,16 +56,30 @@ class Profile extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'no_hp' => 'required|numeric',
+            'new_password' => 'nullable|min:8|confirmed',
+        ],[
+            'new_password.min' => 'Password harus minimal 8 karakter.',
+            'new_password.confirmed' => 'Konfirmasi password tidak cocok.'
         ]);
 
         $user = User::find(Auth::id());
+
         $user->update([
             'name' => $this->name,
             'no_hp' => $this->no_hp,
         ]);
 
+        if (!empty($this->new_password)) {
+            $user->password = Hash::make($this->new_password);
+            $user->save();
+            $this->reset(['new_password','new_password_confirmation']);
+            session()->flash('password_message', 'Password berhasil disimpan.');
+        }
+
         session()->flash('message', 'Profil berhasil diperbarui.');
     }
+
+    
 
     // ==================================================
     // 2. MANAJEMEN ALAMAT
