@@ -12,5 +12,8 @@
         "postcss": "^8.5.6",
         "tailwindcss": "3.4",
         "vite": "^5.0"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.87.1"
     }
 }
