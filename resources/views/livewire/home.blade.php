@@ -13,24 +13,99 @@
     {{-- BAGIAN 1: HEADER & MENU (TIDAK DIUBAH)    --}}
     {{-- ========================================= --}}
     
-    {{-- Hero Banner --}}
-    <div class="relative overflow-hidden bg-orange-200 rounded-3xl p-8 text-stone-800">
-        <div class="relative z-10 max-w-lg">
-            <h1 class="text-3xl font-extrabold mb-2 text-stone-900">Selamat Datang! 👋</h1>
-            <p class="text-stone-700 font-medium mb-6 leading-relaxed">
-                Platform digital DN Auto. Solusi lengkap perawatan mobil dan aksesoris termurah dengan kualitas terbaik.
-            </p>
-            <div class="flex space-x-3">
-                <button class="bg-stone-900 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-orange-200/50 active:scale-95 transition-transform">
-                    Mulai Booking
-                </button>
+    {{-- Hero Banner "Clean Professional" --}}
+    <div class="relative overflow-hidden bg-white rounded-3xl p-8 md:p-12 shadow-xl shadow-orange-100 border border-orange-100 isolate">
+        
+        {{-- Background Elements (Abstrak Cerah) --}}
+        {{-- Lingkaran Oranye Halus di Kanan Atas --}}
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-gradient-to-br from-orange-400 to-amber-300 rounded-full blur-3xl opacity-20"></div>
+        {{-- Lingkaran Kuning di Kiri Bawah --}}
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-60 h-60 bg-yellow-300 rounded-full blur-3xl opacity-20"></div>
+        
+        {{-- Pattern Garis Halus (Tech Feel) --}}
+        <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(#f97316 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            
+            {{-- KIRI: Teks & Copywriting --}}
+            <div class="max-w-xl space-y-6">
+                {{-- Badge Status --}}
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-orange-600 text-xs font-bold uppercase tracking-wider shadow-sm">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                    </span>
+                    Siap Melayani Anda
+                </div>
+
+                <h1 class="text-4xl md:text-5xl font-black text-stone-800 leading-tight tracking-tight">
+                    Rawat Mobil <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">
+                        Tanpa Ribet.
+                    </span>
+                </h1>
+
+                <p class="text-stone-500 text-lg font-medium leading-relaxed max-w-md">
+                    Layanan home service terpercaya dan aksesoris mobil terlengkap. Kualitas bengkel resmi, harga bengkel teman.
+                </p>
+
+                <div class="flex flex-wrap gap-3 pt-2">
+                    {{-- Tombol Utama (Gradient Orange) --}}
+                    <a href="#katalog" class="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-1 active:scale-95">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        Belanja Sekarang
+                    </a>
+                    
+                    {{-- Tombol Sekunder (Minimalis) --}}
+                    <a href="{{ route('history') }}" wire:navigate class="flex items-center gap-2 bg-white text-stone-600 border border-stone-200 hover:border-orange-300 hover:text-orange-600 px-6 py-3.5 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md">
+                        Cek Pesanan
+                    </a>
+                </div>
+            </div>
+
+            {{-- KANAN: Visual / Ilustrasi (Mobil Abstrak) --}}
+            <div class="hidden md:block relative w-full max-w-xs lg:max-w-sm">
+                {{-- Card Floating 1 --}}
+                <div class="absolute -top-4 -left-4 bg-white p-3 rounded-2xl shadow-xl shadow-orange-100 border border-orange-50 animate-bounce" style="animation-duration: 3s;">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-green-100 p-1.5 rounded-lg text-green-600">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <span class="text-xs font-bold text-stone-700">Terverifikasi</span>
+                    </div>
+                </div>
+
+                {{-- Card Floating 2 --}}
+                <div class="absolute bottom-8 -right-4 bg-white p-3 rounded-2xl shadow-xl shadow-orange-100 border border-orange-50 animate-bounce" style="animation-duration: 4s;">
+                     <div class="flex items-center gap-2">
+                        <div class="bg-blue-100 p-1.5 rounded-lg text-blue-600">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <span class="text-xs font-bold text-stone-700">Home Service</span>
+                    </div>
+                </div>
+
+                {{-- Ilustrasi Utama (Vector Style) --}}
+                {{-- Menggunakan SVG inline agar tidak perlu upload gambar --}}
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto drop-shadow-2xl">
+                    <path fill="#FFEDD5" d="M45.7,-58.9C58.9,-51.9,69.1,-38.9,74.1,-24.1C79.1,-9.3,78.9,7.3,72.9,21.9C66.9,36.5,55.1,49.1,41.9,58.9C28.7,68.7,14.1,75.7,0.3,75.3C-13.5,74.9,-27.3,67.1,-39.1,56.9C-50.9,46.7,-60.7,34.1,-65.7,19.9C-70.7,5.7,-70.9,-10.1,-64.4,-23.4C-57.9,-36.7,-44.7,-47.5,-31.5,-54.5C-18.3,-61.5,-5.1,-64.7,9.6,-64.7C24.3,-64.7,32.5,-65.9,45.7,-58.9Z" transform="translate(100 100) scale(1.1)" />
+                    <path d="M40 110 L160 110 L150 70 L50 70 Z" fill="url(#grad1)" stroke="#f97316" stroke-width="2" transform="translate(0, 10)" opacity="0.9"/>
+                    <circle cx="60" cy="110" r="15" fill="#44403c" />
+                    <circle cx="140" cy="110" r="15" fill="#44403c" />
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#fed7aa;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#fff7ed;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
             </div>
         </div>
-        <div class="absolute -bottom-16 -right-16 w-64 h-64 bg-white/20 rounded-full"></div>
-        <div class="absolute top-10 right-10 w-20 h-20 bg-white/30 rounded-full"></div>
     </div>
 
-    {{-- Menu Icon Grid --}}
+    
+
+    <!-- {{-- Menu Icon Grid --}}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-2xl border border-stone-100 flex flex-col items-center justify-center text-center cursor-pointer hover:border-orange-200 hover:shadow-pastel transition-all duration-300">
             <div class="w-14 h-14 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-3">
@@ -59,7 +134,7 @@
             </div>
             <span class="text-stone-800 font-bold text-sm">Info & Bantuan</span>
         </div>
-    </div>
+    </div> -->
 
     {{-- ========================================= --}}
     {{-- BAGIAN 2: KATALOG (SHOPEE STYLE)          --}}
