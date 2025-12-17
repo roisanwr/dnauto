@@ -65,7 +65,7 @@
 
             <a href="{{ route('admin.produk') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
                 <i data-lucide="package" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
-                Produk & Jasa
+                Produk
             </a>
             <!-- <div x-data="{ open: {{ request()->routeIs('admin.produk*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
