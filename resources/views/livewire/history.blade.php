@@ -28,6 +28,12 @@
             </div>
         </div>
 
+        @if (session()->has('message'))
+            <div class="mb-4 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg shadow-sm">
+                {{ session('message') }}
+            </div>
+        @endif
+
         <div class="space-y-6">
             @forelse ($orders as $order)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition duration-200">

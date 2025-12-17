@@ -240,7 +240,7 @@ class Checkout extends Component
             $pesanan->snap_token = $snapToken;
             $pesanan->save();
 
-            return redirect()->route('payment', $pesanan->id);
+            return redirect()->route('history')->with('message', 'Pesanan berhasil dibuat. Silakan selesaikan pembayaran di bawah ini.');
 
         } catch (\Exception $e) {
             session()->flash('error', $e->getMessage());
