@@ -21,6 +21,7 @@ use App\Livewire\History;
 use App\Livewire\Admin\Pesanan\Index as PesananIndex;
 use App\Livewire\Admin\Pesanan\Show as PesananShow;
 use App\Http\Controllers\Admin\InvoiceController;
+use App\Livewire\Admin\Schedule\Index as ScheduleIndex;
 
 
 // 1. Halaman Utama (Home)
@@ -88,5 +89,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
 
     // Route Cetak Invoice
     Route::get('/pesanan/{id}/invoice', [InvoiceController::class, 'print'])->name('admin.pesanan.invoice');
+
+    // Route Jadwal
+    Route::get('/schedule', App\Livewire\Admin\Schedule\Index::class)->name('admin.schedule');
 
 }); 
