@@ -53,8 +53,8 @@
                 {{-- <span class="ml-auto bg-orange-100 text-orange-600 py-0.5 px-2 rounded-full text-xs font-bold">3</span> --}}
             </a>
 
-            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
-                <i data-lucide="clipboard-list" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
+            <a href="{{ route('admin.schedule') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-colors group {{ request()->routeIs('admin.schedule') ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}">
+                <i data-lucide="clipboard-list" class="w-4 h-4 {{ request()->routeIs('admin.schedule') ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600' }}"></i>
                 Antrean Servis
             </a>
 
@@ -65,7 +65,7 @@
 
             <a href="{{ route('admin.produk') }}" wire:navigate class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
                 <i data-lucide="package" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
-                Produk & Jasa
+                Produk
             </a>
             <!-- <div x-data="{ open: {{ request()->routeIs('admin.produk*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
@@ -102,12 +102,12 @@
                 </div>
             </div>
 
-            <div class="pt-4 mt-4 border-t border-gray-100">
+            <!-- <div class="pt-4 mt-4 border-t border-gray-100">
                 <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors group">
                     <i data-lucide="file-bar-chart" class="w-4 h-4 text-gray-400 group-hover:text-gray-600"></i>
                     Laporan Keuangan
                 </a>
-            </div>
+            </div> -->
         </nav>
 
         <div class="p-4 border-t border-gray-200 relative" x-data="{ userMenuOpen: false }">

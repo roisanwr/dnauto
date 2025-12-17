@@ -30,6 +30,15 @@
                     @error('no_hp') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Buat Password Baru (opsional)</label>
+                    <input type="password" wire:model.defer="new_password" placeholder="Kosongkan jika tidak ingin mengubah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    @error('new_password') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+
+                    <label class="block text-sm font-medium text-gray-700 mt-2">Konfirmasi Password Baru</label>
+                    <input type="password" wire:model.defer="new_password_confirmation" placeholder="Konfirmasi password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
                 <div class="md:col-span-2 text-right">
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium transition">
                         Simpan Perubahan Akun

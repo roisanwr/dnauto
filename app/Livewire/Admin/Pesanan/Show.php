@@ -92,20 +92,26 @@ class Show extends Component
             'jam_mulai' => 'required',
         ]);
 
-        // 1. CEK BENTROK (DOUBLE BOOKING PREVENTION)
-        // Cek apakah pegawai ini SUDAH punya jadwal di TANGGAL dan JAM yang sama?
-        // Asumsi pengerjaan memakan waktu (misal 2-3 jam), tapi untuk simpelnya kita cek jam mulainya.
+        // 1. LOGIC CEK BENTROK (SAMA DENGAN RENDER)
+        // Estimasi pengerjaan 2 jam
+        $startInput = \Carbon\Carbon::parse($this->jam_mulai);
+        $endInput   = $startInput->copy()->addHours(2);
+
         $bentrok = Schedule::where('pegawai_id', $this->pegawai_id)
             ->where('tgl_pengerjaan', $this->tgl_pengerjaan)
-            ->where('status', '!=', 'selesai') // Abaikan yang sudah selesai
-            ->where('status', '!=', 'reschedule') // Abaikan yang batal/reschedule
-            // Logic Cek Jam: Jika jam mulai sama persis (Bisa dikembangkan jadi rentang waktu nanti)
-            ->where('jam_mulai', $this->jam_mulai) 
-            ->exists();
+            ->where('status', '!=', 'selesai') 
+            ->where('status', '!=', 'reschedule')
+            ->get()
+            ->filter(function ($jadwal) use ($startInput, $endInput) {
+                $startDb = \Carbon\Carbon::parse($jadwal->jam_mulai);
+                $endDb   = $startDb->copy()->addHours(2);
 
-        if ($bentrok) {
-            // Lempar error ke user admin
-            $this->addError('pegawai_id', 'Teknisi ini sudah ada jadwal lain di Tanggal & Jam tersebut!');
+                // Cek Overlap: (StartA < EndB) && (EndA > StartB)
+                return $startInput->lt($endDb) && $endInput->gt($startDb);
+            });
+
+        if ($bentrok->isNotEmpty()) {
+            $this->addError('pegawai_id', 'Teknisi ini sibuk di jam tersebut (estimasi durasi 2 jam). Pilih jam lain.');
             return;
         }
 
@@ -119,11 +125,6 @@ class Show extends Component
                 'status' => 'terjadwal'
             ]
         );
-
-        // 3. UPDATE STATUS PEGAWAI (Opsional, tapi bagus buat visual)
-        // Pegawai::find($this->pegawai_id)->update(['status_ketersediaan' => 'busy']); 
-        // Note: Logic 'busy' ini agak tricky kalau jadwalnya minggu depan, jadi mending biarkan 'available' 
-        // tapi difilter lewat query jadwal seperti di bawah.
 
         // Logic Status Pesanan
         if ($this->pesanan->sisa_tagihan > 0) {
@@ -188,15 +189,39 @@ class Show extends Component
         // LOGIC SMART FILTER PEGAWAI
         // Kita hanya mau menampilkan pegawai yang:
         // 1. Status dasarnya 'available' (Gak cuti/sakit)
-        // 2. BELUM punya jadwal di tanggal & jam yang dipilih admin (Kalau admin sudah input tanggal)
+        // 2. BELUM punya jadwal yang BERIRISAN/BENTROK dengan jam yang dipilih
 
         $queryPegawai = Pegawai::where('status_ketersediaan', 'available');
 
         if ($this->tgl_pengerjaan && $this->jam_mulai) {
-            $queryPegawai->whereDoesntHave('schedule', function($q) {
+            
+            // Asumsi durasi pengerjaan standar = 2 jam (bisa disesuaikan)
+            $startInput = \Carbon\Carbon::parse($this->jam_mulai);
+            $endInput   = $startInput->copy()->addHours(2);
+
+            // Gunakan 'schedules' (pakai s) sesuai nama fungsi di Model Pegawai
+            $queryPegawai->whereDoesntHave('schedules', function($q) use ($startInput, $endInput) {
                 $q->where('tgl_pengerjaan', $this->tgl_pengerjaan)
-                  ->where('jam_mulai', $this->jam_mulai)
-                  ->whereIn('status', ['terjadwal']); // Status aktif
+                ->whereIn('status', ['terjadwal']) // Hanya cek yang statusnya aktif
+                ->where(function($subQ) use ($startInput, $endInput) {
+                    // LOGIC CEK BENTROK JAM (Overlap)
+                    // Jadwal database (Start DB)
+                    // Kita anggap durasi job lama juga 2 jam (End DB)
+                    
+                    // Rumus Overlap: (StartA < EndB) && (EndA > StartB)
+                    // Karena kita pakai SQL Raw/Logic query builder agak ribet menghitung end_time dinamis,
+                    // Kita pakai pendekatan sederhana: Jam mulai tidak boleh sama persis ATAU berdekatan
+                    
+                    // Opsi Paling Aman & Simpel di Query Builder:
+                    // Cek apakah ada jadwal di jam yang sama persis
+                    // ATAU 1 jam sebelum/sesudah jam input.
+                    
+                    $subQ->where('jam_mulai', $this->jam_mulai) // Sama persis
+                        ->orWhereBetween('jam_mulai', [
+                            $startInput->copy()->subHours(2)->format('H:i'),
+                            $endInput->format('H:i')
+                        ]);
+                });
             });
         }
 
