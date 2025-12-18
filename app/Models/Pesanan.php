@@ -19,6 +19,7 @@ class Pesanan extends Model
         'snap_alamat_lengkap',
         'status',
         
+        'no_resi',
         // --- TAMBAHAN BARU ---
         'jenis_pembayaran', // <--- PENTING: User pilih DP/Full
         'jumlah_dp',        // <--- PENTING: Nilai 50%

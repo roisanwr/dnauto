@@ -122,6 +122,8 @@ return new class extends Migration
             $table->enum('jenis_pembayaran', ['lunas', 'dp'])->default('lunas');
             $table->string('status')->default('menunggu_pembayaran'); 
             
+            $table->string('no_resi')->nullable(); // Nullable karena pesanan Jasa tidak butuh resi
+
             $table->decimal('total_belanja', 12, 2);       // Total Harga Barang
             $table->decimal('biaya_layanan', 12, 2)->default(0); // Total Jasa + Ongkir Teknisi
             $table->decimal('grand_total', 12, 2);         // Total Project
@@ -156,7 +158,6 @@ return new class extends Migration
             $table->enum('tipe', ['dp', 'pelunasan']); // Penting buat callback controller
             $table->string('metode_pembayaran');
             $table->decimal('jumlah_bayar', 12, 2);
-            $table->string('bukti_foto')->nullable();
             $table->enum('status', ['pending', 'valid', 'invalid'])->default('pending');
             $table->timestamps();
         });

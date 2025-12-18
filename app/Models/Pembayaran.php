@@ -14,7 +14,6 @@ class Pembayaran extends Model
         'tipe',
         'metode_pembayaran',
         'jumlah_bayar',
-        'bukti_foto',
         'status',
     ];
 
