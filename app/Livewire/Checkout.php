@@ -240,7 +240,7 @@ class Checkout extends Component
             $pesanan->snap_token = $snapToken;
             $pesanan->save();
 
-            return redirect()->route('payment', $pesanan->id);
+            return redirect()->route('history');
 
         } catch (\Exception $e) {
             session()->flash('error', $e->getMessage());
